@@ -1,0 +1,1254 @@
+<!doctype html>
+<!--
+    JSXGraph Artificial Intelligence Renderer – AIR for VS Code
+
+    License:    The MIT License
+    Copyright:  2026 – Center for Mobile Learning with Digital Technology, University of Bayreuth, Germany
+    Author:     Carsten Miller
+    Web:        https://jsxgraph.org
+
+    Version:    1.01
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JSXGraph AIR for Visual Studio Code</title>
+    <style>
+      :root {
+        --vsc-bg: #1e1e1e;
+        --vsc-bg-elevated: #252526;
+        --vsc-panel: #2d2d2d;
+        --vsc-border: #454545;
+        --vsc-fg: #cccccc;
+        --vsc-fg-muted: #9d9d9d;
+        --vsc-blue: #007acc;
+        --vsc-blue-hover: #1f8ad2;
+        --vsc-button-bg: #0e639c;
+        --vsc-button-hover: #1177bb;
+        --vsc-input-bg: #3c3c3c;
+        --vsc-focus-border: #007fd4;
+        --vsc-error: #f14c4c;
+        --vsc-success: #89d185;
+        --vsc-warning: #cca700;
+        --vsc-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        --vsc-mono: Consolas, "Courier New", monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        background: var(--vsc-bg);
+        color: var(--vsc-fg);
+        font-family: var(--vsc-font);
+      }
+
+      .viewport {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        background: var(--vsc-bg);
+      }
+      #preview-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+        background: #ffffff;
+      }
+      .empty-note {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: var(--vsc-fg-muted);
+        font-size: 0.9rem;
+        text-align: center;
+        padding: 24px;
+        background: var(--vsc-bg);
+      }
+      .empty-note.hidden {
+        display: none;
+      }
+
+      .panel {
+        display: none;
+        position: absolute;
+        inset: 0;
+        flex-direction: column;
+        gap: 14px;
+        padding: 28px clamp(20px, 6vw, 64px);
+        background: var(--vsc-bg-elevated);
+        overflow-y: auto;
+        z-index: 20;
+      }
+      .panel.visible {
+        display: flex;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--vsc-border);
+        padding-bottom: 10px;
+      }
+      .panel-header h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--vsc-fg);
+      }
+      .panel-close {
+        background: none;
+        border: none;
+        color: var(--vsc-fg-muted);
+        font-size: 1.2rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+      .panel-close:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--vsc-fg);
+      }
+
+      .panel-section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 620px;
+      }
+      .panel-section p {
+        margin: 0;
+        font-size: 0.85rem;
+        line-height: 1.55;
+        color: var(--vsc-fg-muted);
+      }
+      .panel-section code {
+        font-family: var(--vsc-mono);
+        background: var(--vsc-input-bg);
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: var(--vsc-fg);
+      }
+
+      .field-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--vsc-fg);
+      }
+      .field-input {
+        display: block;
+        width: 100%;
+        background: var(--vsc-input-bg);
+        color: var(--vsc-fg);
+        border: 1px solid var(--vsc-border);
+        border-radius: 2px;
+        padding: 7px 10px;
+        font-family: var(--vsc-mono);
+        font-size: 0.85rem;
+        outline: none;
+      }
+      .field-input:focus {
+        border-color: var(--vsc-focus-border);
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .toggle-row:last-child {
+        border-bottom: none;
+      }
+      .toggle-row input[type="checkbox"] {
+        margin-top: 3px;
+        accent-color: var(--vsc-blue);
+        width: 15px;
+        height: 15px;
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+      .toggle-row label {
+        cursor: pointer;
+      }
+      .toggle-row .toggle-title {
+        font-size: 0.85rem;
+        color: var(--vsc-fg);
+        font-weight: 600;
+        display: block;
+      }
+      .toggle-row .toggle-desc {
+        font-size: 0.78rem;
+        color: var(--vsc-fg-muted);
+        margin-top: 2px;
+      }
+      .toggle-row.disabled .toggle-title,
+      .toggle-row.disabled .toggle-desc {
+        color: var(--vsc-fg-muted);
+        opacity: 0.6;
+      }
+      .badge-soon {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--vsc-warning);
+        border: 1px solid var(--vsc-warning);
+        border-radius: 3px;
+        padding: 1px 5px;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+
+      .vsc-btn {
+        align-self: flex-start;
+        background: var(--vsc-button-bg);
+        color: #ffffff;
+        border: none;
+        border-radius: 2px;
+        padding: 8px 16px;
+        font-family: var(--vsc-font);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .vsc-btn:hover {
+        background: var(--vsc-button-hover);
+      }
+      .vsc-btn:disabled {
+        background: var(--vsc-input-bg);
+        color: var(--vsc-fg-muted);
+        cursor: not-allowed;
+      }
+      .vsc-btn.secondary {
+        background: transparent;
+        border: 1px solid var(--vsc-border);
+        color: var(--vsc-fg);
+      }
+      .vsc-btn.secondary:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .panel-status {
+        font-family: var(--vsc-mono);
+        font-size: 0.78rem;
+        min-height: 1.2em;
+        color: var(--vsc-fg-muted);
+      }
+      .panel-status.error {
+        color: var(--vsc-error);
+      }
+      .panel-status.success {
+        color: var(--vsc-success);
+      }
+
+      .guide-steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .guide-steps li {
+        display: flex;
+        gap: 12px;
+      }
+      .guide-steps .step-number {
+        flex: 0 0 auto;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--vsc-blue);
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .guide-steps .step-body {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .guide-steps .step-title {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: var(--vsc-fg);
+        margin: 0 0 3px;
+      }
+      .guide-steps .step-desc {
+        font-size: 0.82rem;
+        line-height: 1.55;
+        color: var(--vsc-fg-muted);
+        margin: 0;
+      }
+      .guide-steps pre {
+        background: var(--vsc-input-bg);
+        border: 1px solid var(--vsc-border);
+        border-radius: 3px;
+        padding: 8px 10px;
+        margin: 6px 0 0;
+        font-family: var(--vsc-mono);
+        font-size: 0.8rem;
+        color: var(--vsc-fg);
+        overflow-x: auto;
+      }
+
+      #about-panel .panel-section p {
+        color: var(--vsc-fg);
+      }
+      #about-panel a {
+        color: #3794ff;
+      }
+
+      .statusbar {
+        flex: 0 0 auto;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 10px;
+        background: var(--vsc-blue);
+        color: #ffffff;
+        font-size: 0.78rem;
+        z-index: 30;
+      }
+      .statusbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        overflow: hidden;
+      }
+      .logo {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+      }
+      .logo svg {
+        display: block;
+        height: 18px;
+        width: auto;
+      }
+
+      .conn-dot {
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #9d9d9d;
+      }
+      .conn-dot.online {
+        background: var(--vsc-success);
+      }
+      .conn-dot.connecting {
+        background: var(--vsc-warning);
+      }
+      .conn-dot.offline {
+        background: #9d9d9d;
+      }
+
+      .status-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .statusbar-right {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex: 0 0 auto;
+      }
+      .statusbar-right button {
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 0.95rem;
+        line-height: 1;
+        padding: 6px 9px;
+        cursor: pointer;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+      }
+      .statusbar-right button:hover {
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .statusbar-right button svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+      }
+
+      @media (max-width: 560px) {
+        .status-text {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="viewport">
+      <iframe
+        id="preview-frame"
+        title="JSXGraph preview"
+        src="about:blank"
+        referrerpolicy="no-referrer"
+      ></iframe>
+
+      <div class="empty-note" id="empty-note">
+        <span>No construction loaded yet.</span>
+        <span>Use the plug icon below to connect to the local bridge server.</span>
+      </div>
+
+      <div class="panel" id="connection-panel">
+        <div class="panel-header">
+          <h2>Connection</h2>
+          <button type="button" class="panel-close" data-close-panel aria-label="Close">✕</button>
+        </div>
+        <div class="panel-section">
+          <p>
+            Connects to the local bridge server that watches <code>header.js</code> and
+            <code>construction.js</code> and automatically displays their content here.
+          </p>
+          <label class="field-label" for="ws-url-input">WebSocket address</label>
+          <input
+            type="text"
+            id="ws-url-input"
+            class="field-input"
+            value="ws://localhost:8787"
+            spellcheck="false"
+            autocomplete="off"
+          />
+          <div class="toggle-row">
+            <input type="checkbox" id="auto-connect-checkbox" />
+            <label for="auto-connect-checkbox">
+              <span class="toggle-title">Connect automatically</span>
+              <span class="toggle-desc"
+                >Automatically connects to the address above whenever this page is opened.</span
+              >
+            </label>
+          </div>
+          <button type="button" class="vsc-btn" id="connect-btn">Connect</button>
+          <div class="panel-status" id="connection-panel-status"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="settings-panel">
+        <div class="panel-header">
+          <h2>Settings</h2>
+          <button type="button" class="panel-close" data-close-panel aria-label="Close">✕</button>
+        </div>
+        <div class="panel-section">
+          <p>
+            <strong>construction.js</strong> is always checked against a fixed blocklist (no
+            <code>&lt;script&gt;</code>, no <code>eval</code>, no network/storage access, no escaping the
+            iframe).
+          </p>
+          <p>
+            <strong>header.js</strong> is allowed to add specific HTML head elements instead (e.g. MathJax).
+            Choose which categories are permitted:
+          </p>
+
+          <div class="toggle-row">
+            <input type="checkbox" id="allow-scripts-checkbox" />
+            <label for="allow-scripts-checkbox">
+              <span class="toggle-title">External scripts</span>
+              <span class="toggle-desc"
+                ><code>&lt;script src="https://..."&gt;&lt;/script&gt;</code> — e.g. MathJax or other
+                libraries.</span
+              >
+            </label>
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="allow-styles-checkbox" />
+            <label for="allow-styles-checkbox">
+              <span class="toggle-title">Style / CSS</span>
+              <span class="toggle-desc"
+                ><code>&lt;link rel="stylesheet"&gt;</code> and <code>&lt;style&gt;</code> blocks.</span
+              >
+            </label>
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="allow-meta-checkbox" />
+            <label for="allow-meta-checkbox">
+              <span class="toggle-title">Meta tags</span>
+              <span class="toggle-desc"><code>&lt;meta ...&gt;</code>, e.g. for charset or viewport.</span>
+            </label>
+          </div>
+          <div class="toggle-row disabled">
+            <input type="checkbox" id="writeback-checkbox" disabled />
+            <label for="writeback-checkbox">
+              <span class="toggle-title"
+                >Write preview changes back to file<span class="badge-soon">Coming soon</span></span
+              >
+              <span class="toggle-desc"
+                >Would write positions changed via drag &amp; drop back into <code>construction.js</code>. Not
+                implemented yet — the switch is already in place for later.</span
+              >
+            </label>
+          </div>
+
+          <button type="button" class="vsc-btn" id="save-settings-btn">Save</button>
+          <div class="panel-status" id="settings-panel-status"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="share-panel">
+        <div class="panel-header">
+          <h2>Share</h2>
+          <button type="button" class="panel-close" data-close-panel aria-label="Close">✕</button>
+        </div>
+        <div class="panel-section">
+          <p>
+            Embeds <code>header.js</code> and <code>construction.js</code> into a complete, self-contained
+            HTML document (including the JSXGraph library from jsDelivr).
+          </p>
+          <button type="button" class="vsc-btn" id="download-html-btn">Download as HTML file</button>
+          <button type="button" class="vsc-btn secondary" id="copy-html-btn">Copy to clipboard</button>
+          <button type="button" class="vsc-btn secondary" disabled title="Coming in a later version">
+            Open in jsFiddle<span class="badge-soon">Coming soon</span>
+          </button>
+          <button type="button" class="vsc-btn secondary" disabled title="Coming in a later version">
+            Export for JSXGraph Moodle plugin<span class="badge-soon">Coming soon</span>
+          </button>
+          <div class="panel-status" id="share-panel-status"></div>
+        </div>
+      </div>
+
+      <div class="panel" id="guide-panel">
+        <div class="panel-header">
+          <h2>Setup Guide</h2>
+          <button type="button" class="panel-close" data-close-panel aria-label="Close">✕</button>
+        </div>
+        <div class="panel-section">
+          <p>How to use this preview together with GitHub Copilot in Visual Studio Code.</p>
+          <ol class="guide-steps">
+            <li>
+              <span class="step-number">1</span>
+              <div class="step-body">
+                <p class="step-title">Install Node.js</p>
+                <p class="step-desc">
+                  The bridge server needs Node.js (which includes <code>npm</code>). Download it from
+                  <code>nodejs.org</code> if <code>node --version</code> doesn't work yet in your terminal.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">2</span>
+              <div class="step-body">
+                <p class="step-title">Install the GitHub Copilot extension</p>
+                <p class="step-desc">
+                  In VS Code, open the Extensions view and install <strong>GitHub Copilot</strong> (and
+                  optionally <strong>GitHub Copilot Chat</strong>). Sign in with a GitHub account that has an
+                  active Copilot subscription.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">3</span>
+              <div class="step-body">
+                <p class="step-title">Open the project folder</p>
+                <p class="step-desc">
+                  Open the folder containing <code>JSXGraph-AIR-VSCode.html</code> and the bridge server
+                  (<code>server.js</code>, <code>package.json</code>) in VS Code.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">4</span>
+              <div class="step-body">
+                <p class="step-title">Install dependencies</p>
+                <p class="step-desc">In the VS Code terminal, run this once:</p>
+                <pre>npm install</pre>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">5</span>
+              <div class="step-body">
+                <p class="step-title">Start the bridge server</p>
+                <p class="step-desc">
+                  Either run it manually, or let the included task start it automatically when the folder
+                  opens:
+                </p>
+                <pre>npm start</pre>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">6</span>
+              <div class="step-body">
+                <p class="step-title">Open this page and connect</p>
+                <p class="step-desc">
+                  Open <code>JSXGraph-AIR-VSCode.html</code> in a browser. Click the plug icon (Connection),
+                  check the WebSocket address (default <code>ws://localhost:8787</code>) and click Connect.
+                  Enable "Connect automatically" so this step isn't needed again.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">7</span>
+              <div class="step-body">
+                <p class="step-title">Ask Copilot to write the construction</p>
+                <p class="step-desc">
+                  Open <code>construction.js</code> in VS Code and ask Copilot Chat to write or modify
+                  JSXGraph code in it (e.g. "Add a red circle of radius 3 around the origin in
+                  construction.js"). Saving the file updates the preview automatically. The preview page
+                  always provides a ready-to-use constant called <code>BOARD</code> (holding the id of the div
+                  JSXGraph renders into) - construction.js should call
+                  <code>JXG.JSXGraph.initBoard(BOARD, {...})</code> rather than hardcoding the id as a literal
+                  string, so it keeps working even if that id ever changes.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="step-number">8</span>
+              <div class="step-body">
+                <p class="step-title">Optional: customize the page head</p>
+                <p class="step-desc">
+                  Ask Copilot to edit <code>header.js</code> to add external libraries (e.g. MathJax) or
+                  custom CSS. Which categories are allowed can be controlled under Settings.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="panel" id="about-panel">
+        <div class="panel-header">
+          <h2>About</h2>
+          <button type="button" class="panel-close" data-close-panel aria-label="Close">✕</button>
+        </div>
+        <div class="panel-section">
+          <p><strong>Legal notice</strong></p>
+          <p>
+            JSXGraph AIR for Visual Studio Code – Artificial Intelligence Renderer<br />powered by JSXGraph<br />Carsten
+            Miller
+          </p>
+          <p>
+            Center for Mobile Learning with Digital Technology (CMLDT)<br />University of Bayreuth<br />Universitätsstraße
+            30<br />95447 Bayreuth, Germany
+          </p>
+          <p>Represented by: Prof. Dr. Alfred Wassermann<br />Email: info@jsxgraph.org</p>
+          <p>
+            JSXGraph itself is free software developed at the Center for Mobile Learning with Digital
+            Technology (CMLDT) of the University of Bayreuth, under the LGPL/MIT license.
+          </p>
+          <p>
+            <a href="https://jsxgraph.org/home/imprint/" target="_blank" rel="noopener noreferrer"
+              >Full legal notice at jsxgraph.org</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="statusbar">
+      <div class="statusbar-left">
+        <span class="logo" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 877.3 170.9">
+            <defs>
+              <style>
+                .st0 {
+                  font-family: FiraSans-Regular, "Fira Sans";
+                  font-size: 123.2px;
+                }
+                .st0,
+                .st1 {
+                  fill: #ffffff;
+                }
+              </style>
+            </defs>
+            <text class="st0" transform="translate(695.9 127.5)"><tspan x="0" y="0">AIR</tspan></text>
+            <g>
+              <g>
+                <path
+                  class="st1"
+                  d="M575.9,0c-9.7,0-18.3,4.4-24,11.3h106.2v106.2c6.9-5.7,11.3-14.4,11.3-24V0h-93.5Z"
+                />
+                <path
+                  class="st1"
+                  d="M522,53.9v93.5h93.5c17.2,0,31.2-14,31.2-31.2V22.7h-93.5c-17.2,0-31.2,14-31.2,31.2ZM595.7,127.6h-53.9v-53.9h11.3v42.5h42.5v11.3ZM602.8,39.7c14.8,0,26.9,12.1,26.9,26.9s-12.1,26.9-26.9,26.9-26.9-12.1-26.9-26.9,12.1-26.9,26.9-26.9Z"
+                />
+                <path
+                  class="st1"
+                  d="M602.8,82.2c8.6,0,15.6-7,15.6-15.6s-7-15.6-15.6-15.6-15.6,7-15.6,15.6,7,15.6,15.6,15.6Z"
+                />
+              </g>
+              <g>
+                <path
+                  class="st1"
+                  d="M25.3,115.6c0,8.4-1.8,14.7-5.5,18.9-3.7,4.2-9.2,7.5-16.7,9.9l-3.1-8.5c3.8-1.5,6.6-3.1,8.5-4.8,1.9-1.7,3.2-3.8,3.9-6.3.7-2.5,1.1-5.7,1.1-9.6V42.5h11.7v73.1Z"
+                />
+                <path
+                  class="st1"
+                  d="M84.8,43.4c4,1.6,7.9,4.1,11.7,7.5l-6.4,7.2c-3.2-2.5-6.3-4.4-9.4-5.6-3.1-1.2-6.4-1.8-9.9-1.8s-8.1,1-11,3.1c-2.9,2.1-4.3,5.1-4.3,9s.5,4.5,1.5,6.2c1,1.7,2.8,3.2,5.5,4.6,2.7,1.4,6.6,2.9,11.7,4.4,5.3,1.6,9.8,3.4,13.3,5.3,3.5,1.9,6.4,4.5,8.6,7.8,2.2,3.3,3.3,7.5,3.3,12.6s-1.2,9.3-3.6,13.1c-2.4,3.8-5.9,6.7-10.5,8.9-4.6,2.1-10,3.2-16.2,3.2-11.8,0-21.4-3.7-28.9-11l6.4-7.2c3.5,2.8,6.9,4.9,10.5,6.4,3.5,1.4,7.5,2.2,11.8,2.2s9.6-1.3,13.1-3.9c3.5-2.6,5.2-6.4,5.2-11.3s-.5-5.1-1.6-7c-1.1-1.8-2.9-3.5-5.5-5-2.6-1.5-6.4-3-11.3-4.4-8.7-2.6-15.1-5.8-19.1-9.5s-6-8.7-6-15,1.1-8.1,3.4-11.5c2.3-3.4,5.4-6,9.5-7.9,4.1-1.9,8.7-2.8,13.9-2.8s10.5.8,14.5,2.4Z"
+                />
+                <path
+                  class="st1"
+                  d="M143.4,81.6l25.9,45.9h-13.3l-19.6-37.6-19.9,37.6h-12.6l25.5-45.3-23.3-39.7h13.3l17.1,31.9,17.3-31.9h12.6l-23.1,39.1Z"
+                />
+                <path
+                  class="st1"
+                  d="M225.7,43.3c3.9,1.5,7.8,3.9,11.7,7.1l-6.9,7.2c-3-2.5-6-4.2-8.8-5.3-2.8-1.1-6.1-1.6-9.9-1.6s-8.4,1.2-12,3.5c-3.7,2.3-6.6,6.1-8.9,11.2-2.3,5.1-3.5,11.7-3.5,19.5,0,11.9,2,20.6,5.9,26.1,3.9,5.5,9.7,8.3,17.3,8.3s11.6-1.3,16.2-3.8v-25.6h-15l-1.4-9.5h28v41.1c-8.8,5-18,7.5-27.7,7.5s-19.9-3.7-26.2-11.2c-6.3-7.5-9.4-18.4-9.4-32.8s1.7-17.1,5-23.7c3.3-6.6,7.8-11.6,13.4-15,5.6-3.4,11.8-5.1,18.4-5.1s10,.8,13.9,2.3Z"
+                />
+                <path
+                  class="st1"
+                  d="M292.4,61.7l-2.1,11.1c-2-.5-3.9-.7-5.7-.7-4,0-7.3,1.5-9.7,4.4-2.5,3-4.4,7.6-5.8,13.8v37.1h-11.3V62.5h9.7l1.1,13.2c1.7-4.8,4.1-8.5,7-11,3-2.5,6.4-3.7,10.4-3.7s4.4.2,6.4.7Z"
+                />
+                <path
+                  class="st1"
+                  d="M346.1,118.1c.9,1.3,2.3,2.2,4.1,2.9l-2.6,7.9c-3.4-.4-6.1-1.4-8.1-2.8-2.1-1.5-3.6-3.8-4.6-6.9-4.4,6.5-10.8,9.7-19.4,9.7s-11.5-1.8-15.2-5.4c-3.7-3.6-5.5-8.3-5.5-14.2s2.5-12.2,7.5-15.9c5-3.7,12-5.5,21.1-5.5h10v-4.8c0-4.6-1.1-7.9-3.3-9.9-2.2-2-5.6-3-10.2-3s-10.6,1.2-17.5,3.5l-2.8-8.3c8.1-3,15.5-4.4,22.4-4.4s13.4,1.9,17.1,5.6c3.8,3.7,5.7,9.1,5.7,16v29.7c0,2.6.5,4.6,1.4,5.9ZM333.4,110.3v-14.9h-8.5c-12,0-18,4.4-18,13.3s.9,6.8,2.8,8.8c1.9,2,4.7,3,8.4,3,6.5,0,11.6-3.4,15.3-10.1Z"
+                />
+                <path
+                  class="st1"
+                  d="M416.2,69.9c3.9,5.9,5.8,14.3,5.8,25s-2.2,18.4-6.7,24.7c-4.4,6.2-10.7,9.4-18.9,9.4s-12.9-2.5-17-7.4v30.8l-11.3,1.4V62.5h9.7l.9,8.8c2.4-3.3,5.3-5.8,8.6-7.6,3.4-1.8,6.9-2.7,10.6-2.7,8.3,0,14.4,3,18.2,8.9ZM409.7,94.9c0-16.6-4.9-24.9-14.7-24.9s-6.1.9-8.8,2.8c-2.6,1.9-4.9,4.3-6.9,7.3v31.7c1.6,2.5,3.7,4.5,6.2,5.9,2.5,1.4,5.2,2,8.1,2,10.7,0,16-8.3,16-24.8Z"
+                />
+                <path
+                  class="st1"
+                  d="M485.8,66.3c3.3,3.5,5,8.4,5,14.6v46.6h-11.3v-45c0-4.6-.9-7.8-2.7-9.7-1.8-1.9-4.3-2.8-7.7-2.8s-6.4,1-9,3c-2.6,2-5.1,4.8-7.4,8.4v46.2h-11.3V36.5l11.3-1.2v36.3c5.1-7,11.5-10.5,19.2-10.5s10.5,1.8,13.9,5.3Z"
+                />
+              </g>
+            </g>
+          </svg>
+        </span>
+        <span class="conn-dot offline" id="conn-dot"></span>
+        <span class="status-text" id="status-text">Not connected.</span>
+      </div>
+      <div class="statusbar-right">
+        <button
+          type="button"
+          id="btn-preview"
+          aria-label="Show preview"
+          title="Show preview (closes any open panel)"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+        <button type="button" id="btn-connection" aria-label="Connection" title="Connection">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+        </button>
+        <button type="button" id="btn-settings" aria-label="Settings" title="Settings">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
+          </svg>
+        </button>
+        <button type="button" id="btn-share" aria-label="Share" title="Share">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+            <polyline points="16 6 12 2 8 6" />
+            <line x1="12" y1="2" x2="12" y2="15" />
+          </svg>
+        </button>
+        <button type="button" id="btn-guide" aria-label="Setup guide" title="Setup guide">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </button>
+        <button type="button" id="btn-about" aria-label="About" title="About">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+    <script>
+      /*
+          JSXGraph Artificial Intelligence Renderer – AIR for VS Code
+          Copyright 2026
+          Carsten Miller
+          https://jsxgraph.org
+      */
+
+      const frame = document.getElementById("preview-frame");
+      const emptyNote = document.getElementById("empty-note");
+      const statusText = document.getElementById("status-text");
+      const connDot = document.getElementById("conn-dot");
+      const panels = {
+        connection: document.getElementById("connection-panel"),
+        settings: document.getElementById("settings-panel"),
+        share: document.getElementById("share-panel"),
+        guide: document.getElementById("guide-panel"),
+        about: document.getElementById("about-panel"),
+      };
+
+      function hideAllPanels() {
+        Object.keys(panels).forEach(function (key) {
+          panels[key].classList.remove("visible");
+        });
+      }
+
+      function showPanel(name) {
+        hideAllPanels();
+        panels[name].classList.add("visible");
+      }
+      document.querySelectorAll("[data-close-panel]").forEach(function (btn) {
+        btn.addEventListener("click", hideAllPanels);
+      });
+      document.getElementById("btn-preview").addEventListener("click", hideAllPanels);
+      document.getElementById("btn-connection").addEventListener("click", function () {
+        showPanel("connection");
+      });
+      document.getElementById("btn-settings").addEventListener("click", function () {
+        showPanel("settings");
+      });
+      document.getElementById("btn-share").addEventListener("click", function () {
+        showPanel("share");
+      });
+      document.getElementById("btn-guide").addEventListener("click", function () {
+        showPanel("guide");
+      });
+      document.getElementById("btn-about").addEventListener("click", function () {
+        showPanel("about");
+      });
+      const STORAGE_KEYS = {
+        wsUrl: "airvsc.wsUrl",
+        autoConnect: "airvsc.autoConnect",
+        allowScripts: "airvsc.allowScripts",
+        allowStyles: "airvsc.allowStyles",
+        allowMeta: "airvsc.allowMeta",
+        writeBack: "airvsc.writeBack",
+      };
+
+      function loadSetting(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw === null) return fallback;
+          return JSON.parse(raw);
+        } catch (err) {
+          return fallback;
+        }
+      }
+
+      function saveSetting(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch (err) {}
+      }
+      let wsUrl = loadSetting(STORAGE_KEYS.wsUrl, "ws://localhost:8787");
+      let autoConnect = loadSetting(STORAGE_KEYS.autoConnect, true);
+      let allowScripts = loadSetting(STORAGE_KEYS.allowScripts, true);
+      let allowStyles = loadSetting(STORAGE_KEYS.allowStyles, true);
+      let allowMeta = loadSetting(STORAGE_KEYS.allowMeta, true);
+      let writeBackEnabled = loadSetting(STORAGE_KEYS.writeBack, false);
+      const wsUrlInput = document.getElementById("ws-url-input");
+      const autoConnectCheckbox = document.getElementById("auto-connect-checkbox");
+      const allowScriptsCheckbox = document.getElementById("allow-scripts-checkbox");
+      const allowStylesCheckbox = document.getElementById("allow-styles-checkbox");
+      const allowMetaCheckbox = document.getElementById("allow-meta-checkbox");
+      const writebackCheckbox = document.getElementById("writeback-checkbox");
+      wsUrlInput.value = wsUrl;
+      autoConnectCheckbox.checked = autoConnect;
+      allowScriptsCheckbox.checked = allowScripts;
+      allowStylesCheckbox.checked = allowStyles;
+      allowMetaCheckbox.checked = allowMeta;
+      writebackCheckbox.checked = writeBackEnabled;
+
+      function setConnectionStatus(message, kind) {
+        const statusEl = document.getElementById("connection-panel-status");
+        statusEl.textContent = message;
+        statusEl.className = "panel-status" + (kind ? " " + kind : "");
+      }
+
+      function setSettingsStatus(message, kind) {
+        const statusEl = document.getElementById("settings-panel-status");
+        statusEl.textContent = message;
+        statusEl.className = "panel-status" + (kind ? " " + kind : "");
+      }
+
+      function setShareStatus(message, kind) {
+        const statusEl = document.getElementById("share-panel-status");
+        statusEl.textContent = message;
+        statusEl.className = "panel-status" + (kind ? " " + kind : "");
+      }
+
+      function setFooterStatus(message) {
+        statusText.textContent = message;
+      }
+
+      function setConnDot(state) {
+        connDot.className = "conn-dot " + state;
+      }
+      document.getElementById("save-settings-btn").addEventListener("click", function () {
+        allowScripts = allowScriptsCheckbox.checked;
+        allowStyles = allowStylesCheckbox.checked;
+        allowMeta = allowMetaCheckbox.checked;
+        writeBackEnabled = writebackCheckbox.checked;
+        saveSetting(STORAGE_KEYS.allowScripts, allowScripts);
+        saveSetting(STORAGE_KEYS.allowStyles, allowStyles);
+        saveSetting(STORAGE_KEYS.allowMeta, allowMeta);
+        saveSetting(STORAGE_KEYS.writeBack, writeBackEnabled);
+        setSettingsStatus("Saved. Re-checking the current header …", null);
+        applyHeaderContent(lastRawHeaderContent);
+      });
+      const UNSAFE_CONSTRUCTION_PATTERNS = [
+        /<\s*script/i,
+        /<\s*style/i,
+        /<\s*link/i,
+        /<\s*iframe/i,
+        /<\s*img/i,
+        /document\s*\.\s*write/i,
+        /innerHTML/i,
+        /outerHTML/i,
+        /\beval\s*\(/i,
+        /new\s+Function\s*\(/i,
+        /\bfetch\s*\(/i,
+        /XMLHttpRequest/i,
+        /\bimport\s*\(/i,
+        /document\s*\.\s*cookie/i,
+        /localStorage/i,
+        /sessionStorage/i,
+        /window\s*\.\s*parent/i,
+        /window\s*\.\s*top/i,
+        /javascript\s*:/i,
+        /document\s*\.\s*domain/i,
+        /window\s*\.\s*location/i,
+        /document\s*\.\s*location/i,
+        /\.cssText/i,
+        /@import/i,
+        /on(?:error|load|click|mouseover|mouseenter|focus|blur|change)\s*=/i,
+      ];
+
+      function findUnsafeConstructionPattern(code) {
+        for (let i = 0; i < UNSAFE_CONSTRUCTION_PATTERNS.length; i++) {
+          if (UNSAFE_CONSTRUCTION_PATTERNS[i].test(code)) return UNSAFE_CONSTRUCTION_PATTERNS[i];
+        }
+        return null;
+      }
+      const HEADER_BLOCK_PATTERN =
+        /<script\s+src="(https?:\/\/[^"]+)"[^>]*>\s*<\/script>|<link\s+([^>]*)>|<meta\s+([^>]*)>|<style>([\s\S]*?)<\/style>/g;
+
+      function validateHeaderContent(text) {
+        const trimmed = (text || "").trim();
+        if (!trimmed)
+          return {
+            ok: true,
+            sanitized: "",
+            reason: null,
+          };
+        let lastIndex = 0;
+        let match;
+        HEADER_BLOCK_PATTERN.lastIndex = 0;
+        while ((match = HEADER_BLOCK_PATTERN.exec(trimmed)) !== null) {
+          const gap = trimmed.slice(lastIndex, match.index);
+          if (gap.trim()) {
+            return {
+              ok: false,
+              sanitized: "",
+              reason:
+                'Disallowed content outside of <script src>/<link>/<meta>/<style>: "' +
+                gap.trim().slice(0, 60) +
+                '"',
+            };
+          }
+          const whole = match[0];
+          if (whole.indexOf("<script") === 0) {
+            if (!allowScripts)
+              return {
+                ok: false,
+                sanitized: "",
+                reason: "External scripts are disabled in Settings.",
+              };
+          } else if (whole.indexOf("<link") === 0) {
+            if (!allowStyles)
+              return {
+                ok: false,
+                sanitized: "",
+                reason: "Style/CSS is disabled in Settings.",
+              };
+            const attrs = match[2] || "";
+            if (!/rel\s*=\s*"stylesheet"/i.test(attrs))
+              return {
+                ok: false,
+                sanitized: "",
+                reason: '<link> is only allowed with rel="stylesheet".',
+              };
+            if (!/href\s*=\s*"https?:\/\//i.test(attrs))
+              return {
+                ok: false,
+                sanitized: "",
+                reason: "<link> requires an http(s) href.",
+              };
+          } else if (whole.indexOf("<meta") === 0) {
+            if (!allowMeta)
+              return {
+                ok: false,
+                sanitized: "",
+                reason: "Meta tags are disabled in Settings.",
+              };
+          } else if (whole.indexOf("<style") === 0) {
+            if (!allowStyles)
+              return {
+                ok: false,
+                sanitized: "",
+                reason: "Style/CSS is disabled in Settings.",
+              };
+            const css = match[4] || "";
+            if (/@import|expression\(|javascript\s*:/i.test(css)) {
+              return {
+                ok: false,
+                sanitized: "",
+                reason: "Disallowed CSS content found (@import/expression/javascript:).",
+              };
+            }
+          }
+          lastIndex = HEADER_BLOCK_PATTERN.lastIndex;
+        }
+        const tail = trimmed.slice(lastIndex);
+        if (tail.trim()) {
+          return {
+            ok: false,
+            sanitized: "",
+            reason:
+              'Disallowed content outside of <script src>/<link>/<meta>/<style>: "' +
+              tail.trim().slice(0, 60) +
+              '"',
+          };
+        }
+        return {
+          ok: true,
+          sanitized: trimmed,
+          reason: null,
+        };
+      }
+      let currentHeaderContent = "";
+      let currentConstructionContent = "";
+      let lastRawHeaderContent = "";
+
+      function buildStandaloneHtml() {
+        return (
+          "<!DOCTYPE html>\n" +
+          '<html lang="en">\n' +
+          "<head>\n" +
+          '<meta charset="UTF-8">\n' +
+          "<title>JSXGraph Construction</title>\n" +
+          '<script src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"><\/script>\n' +
+          '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css">\n' +
+          (currentHeaderContent ? currentHeaderContent + "\n" : "") +
+          "<style>\n" +
+          "html, body{ margin:0; padding:0; width:100%; height:100%; }\n" +
+          "#box, .jxgbox{ border:none; box-shadow:none; }\n" +
+          "</style>\n" +
+          "</head>\n" +
+          "<body>\n" +
+          '<div id="box" class="jxgbox" style="width:100%; height:100%; display:block; box-sizing:border-box;"></div>\n' +
+          "<script>\n" +
+          "const BOARD = 'box'; // id of the div above - always reference this constant, never the literal string\n" +
+          currentConstructionContent +
+          "\n<\/script>\n" +
+          "</body>\n" +
+          "</html>"
+        );
+      }
+
+      function renderPreview() {
+        if (!currentConstructionContent.trim()) {
+          frame.removeAttribute("srcdoc");
+          frame.src = "about:blank";
+          emptyNote.classList.remove("hidden");
+          return;
+        }
+        emptyNote.classList.add("hidden");
+        frame.removeAttribute("src");
+        frame.srcdoc = buildStandaloneHtml();
+      }
+
+      function applyConstructionContent(rawText) {
+        const unsafePattern = findUnsafeConstructionPattern(rawText);
+        if (unsafePattern) {
+          setFooterStatus("construction.js contained disallowed content and was discarded.");
+          return;
+        }
+        currentConstructionContent = rawText;
+        renderPreview();
+        setFooterStatus("Construction updated (" + new Date().toLocaleTimeString() + ").");
+      }
+
+      function applyHeaderContent(rawText) {
+        lastRawHeaderContent = rawText || "";
+        const result = validateHeaderContent(rawText);
+        if (!result.ok) {
+          setFooterStatus("header.js: " + result.reason);
+          setSettingsStatus(result.reason, "error");
+          return;
+        }
+        currentHeaderContent = result.sanitized;
+        renderPreview();
+        setFooterStatus("Header updated (" + new Date().toLocaleTimeString() + ").");
+        setSettingsStatus("header.js was applied.", "success");
+      }
+      let socket = null;
+
+      function handleSocketMessage(event) {
+        let msg;
+        try {
+          msg = JSON.parse(event.data);
+        } catch (err) {
+          setFooterStatus("Received an invalid message from the bridge server.");
+          return;
+        }
+        if (!msg || typeof msg.type !== "string" || typeof msg.content !== "string") return;
+        if (msg.type === "construction") {
+          applyConstructionContent(msg.content);
+        } else if (msg.type === "header") {
+          applyHeaderContent(msg.content);
+        }
+      }
+
+      function connect() {
+        const url = wsUrlInput.value.trim();
+        if (!url) {
+          setConnectionStatus("Please enter a WebSocket address.", "error");
+          return;
+        }
+        wsUrl = url;
+        saveSetting(STORAGE_KEYS.wsUrl, wsUrl);
+        if (socket) {
+          try {
+            socket.close();
+          } catch (err) {}
+          socket = null;
+        }
+        setConnDot("connecting");
+        setConnectionStatus("Connecting …", null);
+        setFooterStatus("Connecting …");
+        let s;
+        try {
+          s = new WebSocket(wsUrl);
+        } catch (err) {
+          setConnDot("offline");
+          setConnectionStatus("Invalid address: " + err.message, "error");
+          return;
+        }
+        socket = s;
+        s.addEventListener("open", function () {
+          setConnDot("online");
+          setConnectionStatus("Connected to " + wsUrl + ".", "success");
+          setFooterStatus("Connected to " + wsUrl + " — waiting for changes.");
+          hideAllPanels();
+        });
+        s.addEventListener("message", handleSocketMessage);
+        s.addEventListener("close", function () {
+          setConnDot("offline");
+          setConnectionStatus("Connection closed.", "error");
+          setFooterStatus("Connection closed.");
+          socket = null;
+        });
+        s.addEventListener("error", function () {
+          setConnDot("offline");
+          setConnectionStatus("Connection failed. Is the local bridge server running?", "error");
+          setFooterStatus("Connection failed.");
+        });
+      }
+      document.getElementById("connect-btn").addEventListener("click", connect);
+      autoConnectCheckbox.addEventListener("change", function () {
+        autoConnect = autoConnectCheckbox.checked;
+        saveSetting(STORAGE_KEYS.autoConnect, autoConnect);
+      });
+      document.getElementById("download-html-btn").addEventListener("click", function () {
+        const html = buildStandaloneHtml();
+        const blob = new Blob([html], {
+          type: "text/html",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "jsxgraph-construction.html";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setShareStatus("HTML file downloaded.", "success");
+      });
+      document.getElementById("copy-html-btn").addEventListener("click", async function () {
+        const html = buildStandaloneHtml();
+        try {
+          await navigator.clipboard.writeText(html);
+          setShareStatus("HTML copied to clipboard.", "success");
+        } catch (err) {
+          setShareStatus("Copy failed: " + err.message, "error");
+        }
+      });
+      if (autoConnect) {
+        connect();
+      }
+    </script>
+  </body>
+</html>

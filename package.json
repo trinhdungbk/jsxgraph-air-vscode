@@ -1,0 +1,15 @@
+{
+  "name": "jsxgraph-air-vscode",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JSXGraph AIR for VS Code: live preview bridge. Watches construction.js and header.js and sends their content over WebSocket to JSXGraph-AIR-VSCode.html whenever they change.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "author": "Carsten Miller",
+  "homepage": "https://jsxgraph.org"
+}

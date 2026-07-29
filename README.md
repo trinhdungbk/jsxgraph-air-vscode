@@ -11,6 +11,8 @@ Create JSXGraph illustrations with AI assistance, right from your editor. JSXGra
 
 Additional libraries such as MathJax or custom CSS can be added via `header.js`, guarded by a configurable allowlist. When you're done, export your work as a single self-contained HTML file or copy it straight to the clipboard.
 
+---
+
 ## Features
 
 - *Works with or without AI* — the renderer simply reflects the current file content. Every edit in the editor is applied on save: handwritten code, pasted snippets, and AI-generated constructions are all treated exactly the same.
@@ -20,7 +22,9 @@ Additional libraries such as MathJax or custom CSS can be added via `header.js`,
 - *One-click export* — standalone HTML file or clipboard
 - *VS Code look and feel* — auto-connect, settings stored locally
 
-### Requirements
+---
+
+## Requirements
 
 - `Node.js` (LTS version recommended) — runs the local bridge server that watches your files; includes `npm` for the one-time dependency installation. Download from [nodejs.org](https://nodejs.org).
 - Visual Studio Code — the editor in which you (or your AI assistant) write `construction.js` and `header.js`. Download from [code.visualstudio.com](https://code.visualstudio.com).
@@ -34,7 +38,9 @@ Additional libraries such as MathJax or custom CSS can be added via `header.js`,
 
 MIT License. See [LICENSE](LICENSE.txt) for details.
 
-### User Interface
+---
+
+## User Interface
 
 - Viewer
 

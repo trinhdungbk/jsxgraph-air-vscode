@@ -33,3 +33,39 @@ Additional libraries such as MathJax or custom CSS can be added via `header.js`,
 ## License
 
 MIT License. See [LICENSE](LICENSE.txt) for details.
+
+### User Interface
+
+- Viewer
+
+  The Viewer displays the current content of `construction.js`. Whenever the file is modified and saved in VS Code, the displayed construction is updated automatically. All rendering takes place locally on your computer, so no external server or internet connection is required.
+
+  ![jsxgraph-air-vscode.png](img/jsxgraph-air-vscode-view.png)
+
+- Connection
+
+  The Connection panel establishes the connection to the local server running on localhost. It continuously monitors changes to both `construction.js` and `header.js` and updates the viewer instantly whenever a file is saved. This live communication is implemented using WebSockets.
+
+  ![jsxgraph-air-vscode.png](img/jsxgraph-air-vscode-connect.png)
+
+- Settings
+
+  The Settings panel allows you to configure which entries in `header.js` are permitted. A built-in filtering mechanism ensures that only approved resources and settings can be included. This improves the security of the generated HTML documents by preventing the use of unsupported or potentially unsafe content.
+
+  ![jsxgraph-air-vscode.png](img/jsxgraph-air-vscode-settings.png)
+
+- Share
+
+  The Share panel lets you export the current construction as a standalone HTML file that can be opened in any modern web browser. Alternatively, you can copy the complete HTML source to the clipboard and paste it into a new file to create the same self-contained document manually.
+
+  ![jsxgraph-air-vscode.png](img/jsxgraph-air-vscode-share.png)
+
+- Setup Guide
+
+  The Setup Guide walks you through the initial installation and configuration of *JSXGraph AIR for VS Code*. It explains how to install `Node.js`, `npm`, and all required dependencies, ensuring that your development environment is ready to use.
+
+  ![jsxgraph-air-vscode.png](img/jsxgraph-air-vscode-setup.png)
+
+- About
+
+  ![jsxgraph-air-vscode.png](img/jsxgraph-air-vscode-about.png)

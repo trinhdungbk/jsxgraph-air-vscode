@@ -1,0 +1,273 @@
+// GENERATED from figures/_lib.js + 07-q1-square/figure.js -- edit figure.js
+// ---------------------------------------------------------------------------
+// JP textbook notation primitives  (prepended to every figure by render.py)
+// ---------------------------------------------------------------------------
+// Nothing here creates a JSXGraph `point`. Every mark is a `curve`, a `segment`
+// or a `text`. Two reasons: a point is draggable and would let a reader break
+// the figure, and JSXGraph draws a visible dot for it by default -- but a
+// Japanese textbook puts a dot ONLY on a circle centre, a moving point or a
+// division point, never on a polygon vertex.
+
+var INK = { strokeColor: 'black', strokeWidth: 1.4, fixed: true, highlight: false };
+var DOTTED = {
+    strokeColor: 'black', strokeWidth: 1.4, fixed: true, highlight: false,
+    dash: 1, lineCap: 'round'
+};
+var SERIF = 'font-family:"Times New Roman",Times,serif;';
+
+var HEAD_LEN = 0.30, HEAD_HALF = 0.11;
+
+// Type is sized in BOARD UNITS, not pixels, so a figure keeps the textbook's
+// letter-to-figure proportion whatever canvas it is rendered at. Measured off
+// the source scan: a vertex letter's em box is a little over half the length of
+// a short construction step. Getting this wrong is the single most visible way
+// a reproduction stops looking like the book -- px-sized type silently shrinks
+// as the board grows.
+var TYPE = 0.62;
+function px(units) { return units * board.unitX; }
+
+function rad(d) { return d * Math.PI / 180; }
+function polar(p, r, a) { return [p[0] + r * Math.cos(a), p[1] + r * Math.sin(a)]; }
+function dir(p, q) { return Math.atan2(q[1] - p[1], q[0] - p[0]); }
+function midpoint(p, q) { return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; }
+
+// An arc is always drawn counter-clockwise from `from`; lifting `to` above
+// `from` is what keeps a 20-degree wedge from rendering as its 340-degree
+// reflex complement.
+function sweep(from, to) { while (to < from) { to += 2 * Math.PI; } return to; }
+
+function text(x, y, s, ax, ay, size) {
+    return board.create('text', [x, y, s], {
+        anchorX: ax || 'middle', anchorY: ay || 'middle',
+        fontSize: px(size || TYPE), strokeColor: 'black',
+        cssStyle: SERIF, fixed: true, highlight: false
+    });
+}
+
+// Label placed radially out from `p` -- the only way to keep a label clear of
+// the strokes that meet at a vertex without hand-tuning pixel offsets.
+function at(p, r, a, s, size) {
+    var q = polar(p, r, a);
+    return text(q[0], q[1], s, 'middle', 'middle', size);
+}
+
+function seg(p, q, style) { return board.create('segment', [p, q], style || INK); }
+
+function path(pts, style) {
+    return board.create('curve', [
+        pts.map(function (p) { return p[0]; }),
+        pts.map(function (p) { return p[1]; })
+    ], style || INK);
+}
+
+function closed(pts, style) { return path(pts.concat([pts[0]]), style); }
+
+function arc(v, r, from, to, style) {
+    var end = sweep(from, to);
+    return board.create('curve', [
+        function (t) { return v[0] + r * Math.cos(t); },
+        function (t) { return v[1] + r * Math.sin(t); },
+        from, end
+    ], style || INK);
+}
+
+// Arc plus its value, the value sitting `gap` beyond the arc on the bisector.
+function angleMark(v, r, from, to, s, gap, size) {
+    var end = sweep(from, to);
+    arc(v, r, from, end);
+    if (s) { return at(v, r + gap, (from + end) / 2, s, size); }
+}
+
+// The equal-angle marks: filled for the first group, open for the second.
+function mark(v, r, from, to, filled) {
+    var c = polar(v, r, (from + sweep(from, to)) / 2), rr = 0.075;
+    return board.create('curve', [
+        function (t) { return c[0] + rr * Math.cos(t); },
+        function (t) { return c[1] + rr * Math.sin(t); },
+        0, 2 * Math.PI
+    ], {
+        strokeColor: 'black', strokeWidth: 1.2, fixed: true, highlight: false,
+        fillColor: filled ? 'black' : 'white', fillOpacity: 1
+    });
+}
+
+// None of JSXGraph's seven built-in arrow heads is an open V of straight
+// strokes: types 1-2 and 4-6 are filled, 3 is a bar, and 7 -- the only unfilled
+// one -- draws its wings as Bezier curves. So the head is two plain strokes
+// drawn back from the tip.
+function arrowHead(tip, a, scale) {
+    var len = HEAD_LEN * (scale || 1), half = HEAD_HALF * (scale || 1),
+        ux = Math.cos(a), uy = Math.sin(a),
+        bx = tip[0] - ux * len, by = tip[1] - uy * len;
+    return board.create('curve', [
+        [bx - uy * half, tip[0], bx + uy * half],
+        [by + ux * half, tip[1], by - ux * half]
+    ], INK);
+}
+
+// The auxiliary-line arrow in the book is a small solid triangle, unlike the
+// open V that terminates l and m -- a filled head reads as "direction of the
+// construction", an open one as "this line continues".
+function solidHead(tip, a, scale) {
+    var len = HEAD_LEN * (scale || 1), half = HEAD_HALF * (scale || 1),
+        ux = Math.cos(a), uy = Math.sin(a),
+        bx = tip[0] - ux * len, by = tip[1] - uy * len;
+    return board.create('curve', [
+        [tip[0], bx - uy * half, bx + uy * half, tip[0]],
+        [tip[1], by + ux * half, by - ux * half, tip[1]]
+    ], {
+        strokeColor: 'black', strokeWidth: 1, fixed: true, highlight: false,
+        fillColor: 'black', fillOpacity: 1
+    });
+}
+
+// Circled step numbers. They carry no arc of their own: the book drops the
+// bare glyph into the wedge, and an arc would collide with the 108 marks that
+// already sit at the same vertices.
+var CIRCLED = ['&#9312;', '&#9313;', '&#9314;', '&#9315;', '&#9316;', '&#9317;'];
+function step(v, dist, from, to, n, size) {
+    return at(v, dist, (from + sweep(from, to)) / 2, CIRCLED[n - 1], size);
+}
+
+// Intersection of line p1p2 with line q1q2, as plain coordinates -- JSXGraph's
+// own 'intersection' element would create a draggable point with a visible dot.
+function meet(p1, p2, q1, q2) {
+    var a1 = p2[1] - p1[1], b1 = p1[0] - p2[0], c1 = a1 * p1[0] + b1 * p1[1],
+        a2 = q2[1] - q1[1], b2 = q1[0] - q2[0], c2 = a2 * q1[0] + b2 * q1[1],
+        det = a1 * b2 - a2 * b1;
+    return [(b2 * c1 - b1 * c2) / det, (a1 * c2 - a2 * c1) / det];
+}
+
+// Emphasis weight for the congruent pair a solution figure is arguing about.
+// The book distinguishes them by weight alone -- never by colour or by dashing,
+// which is reserved for auxiliary lines.
+var HEAVY = { strokeColor: 'black', strokeWidth: 2.8, fixed: true, highlight: false };
+var SHADE = { strokeColor: 'black', strokeWidth: 0.9, fixed: true, highlight: false };
+
+// A curve's path breaks at any non-finite coordinate, so one element can carry a
+// whole set of unconnected strokes. Hatching and tick marks would otherwise cost
+// one JSXGraph object per stroke.
+function strokeSet(runs, style) {
+    var xs = [], ys = [];
+    runs.forEach(function (run) {
+        xs.push(run[0][0], run[1][0], NaN);
+        ys.push(run[0][1], run[1][1], NaN);
+    });
+    return board.create('curve', [xs, ys], style || INK);
+}
+
+// Parameter interval of the line origin + t * step lying inside a convex
+// counter-clockwise polygon, or null when the line misses it.
+function clipToPolygon(pts, origin, step) {
+    var lo = -Infinity, hi = Infinity, i, p, q, nx, ny, denom, gap, t;
+    for (i = 0; i < pts.length; i++) {
+        p = pts[i];
+        q = pts[(i + 1) % pts.length];
+        nx = p[1] - q[1];
+        ny = q[0] - p[0];
+        denom = step[0] * nx + step[1] * ny;
+        gap = (origin[0] - p[0]) * nx + (origin[1] - p[1]) * ny;
+        if (Math.abs(denom) < 1e-12) {
+            if (gap < 0) { return null; }
+        } else {
+            t = -gap / denom;
+            if (denom > 0) { lo = Math.max(lo, t); } else { hi = Math.min(hi, t); }
+        }
+    }
+    return hi - lo > 1e-9 ? [lo, hi] : null;
+}
+
+function counterClockwise(pts) {
+    var area = 0, i, p, q;
+    for (i = 0; i < pts.length; i++) {
+        p = pts[i];
+        q = pts[(i + 1) % pts.length];
+        area += p[0] * q[1] - q[0] * p[1];
+    }
+    return area > 0 ? pts : pts.slice().reverse();
+}
+
+// The region a question asks for is marked by 45-degree hatching, never a grey
+// tint: the page is monochrome line art and a tint prints as a muddy block.
+function hatch(region, spacing, angleDeg) {
+    var ring = counterClockwise(region),
+        a = rad(angleDeg === undefined ? 45 : angleDeg),
+        step = [Math.cos(a), Math.sin(a)],
+        nx = -step[1], ny = step[0],
+        depth = ring.map(function (p) { return p[0] * nx + p[1] * ny; }),
+        lo = Math.min.apply(null, depth),
+        hi = Math.max.apply(null, depth),
+        gap = spacing || 0.45,
+        runs = [], d, origin, span;
+    for (d = Math.ceil(lo / gap) * gap; d < hi; d += gap) {
+        origin = [nx * d, ny * d];
+        span = clipToPolygon(ring, origin, step);
+        if (span) {
+            runs.push([polar(origin, span[0], a), polar(origin, span[1], a)]);
+        }
+    }
+    return strokeSet(runs, SHADE);
+}
+
+// Equal-length marks: n ticks across the midpoint, one tick count per
+// equivalence class. Sized in board units like the type, so the ticks keep
+// their proportion to the figure whatever canvas it renders at.
+function ticks(p, q, n, size) {
+    var a = dir(p, q), half = size || 0.16,
+        along = a, across = a + Math.PI / 2,
+        centre = midpoint(p, q),
+        runs = [], i, base;
+    for (i = 0; i < n; i++) {
+        base = polar(centre, (i - (n - 1) / 2) * half * 1.3, along);
+        runs.push([polar(base, -half, across), polar(base, half, across)]);
+    }
+    return strokeSet(runs);
+}
+
+// The right angle is a corner square, not an arc -- an arc at 90 degrees is
+// indistinguishable from any other angle mark in the same figure.
+function rightAngle(v, a1, a2, size) {
+    var s = size || 0.42, p = polar(v, s, a1), q = polar(v, s, a2);
+    return path([p, [p[0] + q[0] - v[0], p[1] + q[1] - v[1]], q]);
+}
+
+// @size 363 780
+// 例題35 (1) 問題 -- square ABCD, E on ray CD produced, F where the diagonal
+// AC meets BE. Find angle FED.
+
+var board = JXG.JSXGraph.initBoard(BOARD, {
+    boundingbox: [-1.0, 10.6, 4.4, -1.0],
+    axis: false, grid: false, keepaspectratio: true,
+    showNavigation: false, showCopyright: false
+});
+
+var SIDE = 3.4,
+    GIVEN = 70;     // the angle FDC printed in the question
+
+var A = [0, SIDE], B = [0, 0], C = [SIDE, 0], D = [SIDE, SIDE];
+
+// The chain of dependence runs given -> F -> E, and it has to be built in that
+// order. DC points straight down, so the ray from D that closes 70 degrees on
+// it leaves at 270 - 70; where it crosses the diagonal AC is F; extending BF to
+// the line CD gives E. Placing E by eye instead is what makes this figure look
+// like the book -- and wrong: the given forces E a full tan(70) = 2.75 side
+// lengths above B, which is why the frame is so tall.
+var F = meet(A, C, D, polar(D, 1, rad(270 - GIVEN))),
+    E = meet(B, F, C, D);
+
+closed([A, B, C, D]);
+seg(D, E);          // CD produced upward
+seg(B, E);          // passes through F
+seg(A, C);          // the diagonal, also through F
+seg(D, F);
+
+text(A[0] - 0.32, A[1], 'A', 'right', 'middle');
+text(B[0] - 0.14, B[1] - 0.16, 'B', 'right', 'top');
+text(C[0] + 0.14, C[1] - 0.16, 'C', 'left', 'top');
+text(D[0] + 0.32, D[1], 'D', 'left', 'middle');
+text(E[0], E[1] + 0.30, 'E', 'middle', 'bottom');
+// F sits on two crossing lines; the wide gap at F opens to the lower left,
+// between the arm running down to B and the arm running up to A.
+text(F[0] - 0.30, F[1] - 0.18, 'F', 'right', 'top');
+
+angleMark(D, 0.65, dir(D, F), dir(D, C), '70&deg;', 0.85);

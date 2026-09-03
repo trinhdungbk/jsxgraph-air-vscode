@@ -1,0 +1,145 @@
+// Backup of the untracked construction.js that was in the repo root at the
+// start of this session, before it was replaced with figures/04-s1-pentagon.
+// Kept because it was never committed. 04-s1-pentagon/figure.js is its successor:
+// same pentagon walk and same arrowHead trick, plus the dotted-line fix, the
+// board-unit type scale, the 108 marks at C, and the tightened frame.
+
+// BOARD is a constant provided by the preview page itself (it holds the id of the
+// div JSXGraph renders into) - always reference BOARD here, never a hardcoded string.
+var board = JXG.JSXGraph.initBoard(BOARD, {
+    boundingbox: [-4.5, 7.2, 6.8, -1.4],
+    axis: false,
+    grid: false,
+    keepaspectratio: true,
+    showNavigation: false,
+    showCopyright: false
+});
+
+// Pure annotation figure: no geometric points are created anywhere, so nothing is
+// draggable and no vertex dots appear. Everything is a curve, a segment or a text.
+var ink = { strokeColor: 'black', strokeWidth: 1, fixed: true, highlight: false };
+var dotted = {
+    strokeColor: 'black', strokeWidth: 1, fixed: true, highlight: false,
+    dash: 7, lineCap: 'round'
+};
+var serif = 'font-family:"Times New Roman",Times,serif;';
+
+var HEAD_LENGTH = 0.35,
+    HEAD_HALF_WIDTH = 0.13;
+
+var LINE_GAP = 6,       // vertical distance between l and m
+    TILT = 20,          // angle between l and the side AE
+    AUX_END = 2.9,      // right end of the auxiliary parallel through B
+    AUX_HEAD = 0.62,    // where along it the direction arrow sits
+    AUX_HEAD_SCALE = 0.62;
+
+function rad(deg) { return deg * Math.PI / 180; }
+
+// Walking a regular pentagon clockwise from A turns 72 degrees right at each step.
+// The side length is whatever puts C exactly on m once A is placed on l.
+var heading = [0, 1, 2, 3, 4].map(function (k) { return rad(-TILT - 72 * k); });
+var side = LINE_GAP / -(Math.sin(heading[0]) + Math.sin(heading[1]) + Math.sin(heading[2]));
+
+var ring = [[0, LINE_GAP]];
+heading.forEach(function (h) {
+    var tail = ring[ring.length - 1];
+    ring.push([tail[0] + side * Math.cos(h), tail[1] + side * Math.sin(h)]);
+});
+
+var A = ring[0], E = ring[1], D = ring[2], C = ring[3], B = ring[4];
+
+function label(x, y, str, anchorX, anchorY, fontSize) {
+    return board.create('text', [x, y, str], {
+        anchorX: anchorX,
+        anchorY: anchorY,
+        fontSize: fontSize || 18,
+        strokeColor: 'black',
+        cssStyle: serif,
+        fixed: true,
+        highlight: false
+    });
+}
+
+function direction(from, to) {
+    return Math.atan2(to[1] - from[1], to[0] - from[0]);
+}
+
+function sweep(from, to) {
+    while (to < from) { to += 2 * Math.PI; }
+    return to;
+}
+
+function place(vertex, dist, angle, str, fontSize) {
+    return label(vertex[0] + dist * Math.cos(angle), vertex[1] + dist * Math.sin(angle),
+        str, 'middle', 'middle', fontSize);
+}
+
+// Angle name only, with no arc drawn - used for the circled step numbers.
+function wedge(vertex, dist, from, to, str) {
+    return place(vertex, dist, (from + sweep(from, to)) / 2, str, 16);
+}
+
+function angleMark(vertex, radius, from, to, str, gap) {
+    var end = sweep(from, to);
+    board.create('curve', [
+        function (t) { return vertex[0] + radius * Math.cos(t); },
+        function (t) { return vertex[1] + radius * Math.sin(t); },
+        from, end
+    ], ink);
+    return place(vertex, radius + gap, (from + end) / 2, str);
+}
+
+// None of the seven built-in arrow heads is an open V of straight strokes: 1-2 and
+// 4-6 are filled, 3 is a bar, and 7 - the only unfilled one - draws its wings as
+// Bezier curves. So the head is two plain strokes back from the tip.
+function arrowHead(tip, dir, scale) {
+    var len = HEAD_LENGTH * (scale || 1),
+        half = HEAD_HALF_WIDTH * (scale || 1),
+        ux = Math.cos(dir),
+        uy = Math.sin(dir),
+        bx = tip[0] - ux * len,
+        by = tip[1] - uy * len;
+    return board.create('curve', [
+        [bx - uy * half, tip[0], bx + uy * half],
+        [by + ux * half, tip[1], by - ux * half]
+    ], ink);
+}
+
+function ray(y) {
+    board.create('segment', [[-3.6, y], [6.2, y]], ink);
+    arrowHead([6.2, y], 0);
+}
+
+ray(LINE_GAP);
+ray(0);
+label(-4.0, LINE_GAP, '&#8467;', 'right', 'middle');
+label(-4.0, 0, 'm', 'right', 'middle');
+
+board.create('curve', [
+    ring.map(function (p) { return p[0]; }),
+    ring.map(function (p) { return p[1]; })
+], ink);
+
+label(A[0], A[1] + 0.42, 'A', 'middle', 'bottom');
+label(B[0] - 0.3, B[1] + 0.15, 'B', 'right', 'middle');
+label(C[0], C[1] - 0.35, 'C', 'middle', 'top');
+label(D[0] + 0.28, D[1] + 0.05, 'D', 'left', 'middle');
+label(E[0] + 0.28, E[1] - 0.1, 'E', 'left', 'middle');
+
+// Auxiliary line through B, parallel to l and m - the whole point of the solution.
+board.create('curve', [[B[0], AUX_END], [B[1], B[1]]], dotted);
+arrowHead([B[0] + AUX_HEAD * (AUX_END - B[0]), B[1]], 0, AUX_HEAD_SCALE);
+
+var RIGHT = 0,
+    LEFT = Math.PI;
+
+angleMark(A, 0.75, direction(A, E), RIGHT, '20&deg;', 1.0);
+angleMark(A, 1.05, direction(A, B), direction(A, E), '108&deg;', 0.5);
+wedge(A, 1.15, LEFT, direction(A, B), '&#9315;');
+
+wedge(B, 1.3, RIGHT, direction(B, A), '&#9314;');
+wedge(B, 1.3, direction(B, C), RIGHT, '&#9313;');
+
+wedge(C, 1.15, direction(C, B), LEFT, '&#9312;');
+angleMark(C, 1.05, direction(C, D), direction(C, B), '108&deg;', 0.5);
+angleMark(C, 0.7, RIGHT, direction(C, D), '<i>x</i>', 1.2);

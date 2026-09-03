@@ -115,13 +115,17 @@ curve has a gap there, and the value sits in it.*
 
 ## F. When NOT to draw
 
-**F1. A figure whose givens cannot be read is not drawn.** 例題36(1) — square
-ABCD, F the foot of the perpendicular from C to AE, find ∠DCF — could not be
-built from the pasted page: at that resolution neither *what the 30° subtends*
-nor *what point G is* is legible, and both change the construction. A guessed
-reading produces a figure whose own marked angle is false, looks finished, and
-is permanently un-diagnosable (rule A2/A4). Say which facts are missing and
-stop; do not ship a plausible figure.
+**F1. A figure whose givens cannot be read is not drawn — ask for the one fact
+you are missing.** 例題36(1) — square ABCD, F the foot of the perpendicular from
+C to AE, find ∠DCF — could not be built from the pasted page: at that resolution
+neither *what the 30° subtends* nor *what point G is* was legible, and both
+change the construction. A guessed reading produces a figure whose own marked
+angle is false, looks finished, and is permanently un-diagnosable (rule A2/A4).
+The cost of holding was one question: told the 30° is ∠DEC, the rest fell out
+(E on BD produced, ∠DCF = 15°, and triangle ACE equilateral) and F2 then
+confirmed it three ways. G is still unread, so the figure ships without it and
+says so. Name what is missing, ship what is verified, and do not fill the gap
+with something plausible.
 
 **F2. Test a candidate reading against an identity the figure must satisfy.**
 Before giving up on 例題36(1) each reading was checked against a consequence of

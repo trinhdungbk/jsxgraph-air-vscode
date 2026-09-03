@@ -315,9 +315,31 @@ board units OUTSIDE the side it measures and its label sits 0.5 beyond that —
 neither is part of the geometry the frame was sized from. Size the frame from
 the labels, dimension apexes included.
 
+## 5. 13 — 例題36(1): one question unlocked the whole panel
+
+Held back under F1 because two facts were unreadable. Asking which angle the
+30° marks — the answer was ∠DEC — settled everything else without a crop:
+
+| tested | predicted | measured on the scan |
+|---|---|---|
+| E on the circle where DC subtends 30° | R = 1 side | 1.014 |
+| ∠DEC at the measured E | 30° | 29.2° |
+| E on BD produced | y/x = 1 | 0.974 |
+
+Three independent checks, so the reading is established rather than assumed
+(rule F2). Solving `2t² − 2t − 1 = 0` puts E at `t = (1 + √3)/2` side lengths
+along BD, and then `tan ∠DAE = 2 − √3` **exactly**, i.e. ∠DCF = 15° — half its
+own given, and EA = EC = AC, so ACE is equilateral and ∠AEC = 60°.
+
+That last number is what clears the earlier rejection in section 1: the reading
+thrown out there had ∠AEC = 30°, and here ∠AEC comes out 60°. The two readings
+were never the same one, so nothing contradicts.
+
+**G is still unread.** H measures within 2px of the diagonals' crossing, but G
+misses every candidate line by ~6px — the same order as the error in reading
+positions off a panel this size. So 13 ships with A–F and without G, and its
+header says so. A 4x crop of that one panel closes it.
+
 ## Not built
 
-**13 — 例題36(1).** See section 1. Needs a 4x crop of that panel, or the two
-facts stated: what the 30° at E is the angle of, and what point G is.
-
-例題36 has no `reference/` crops either, so `compare.py` skips 13–15.
+例題36 has no `reference/` crops, so `compare.py` skips 13–15.

@@ -498,3 +498,73 @@ than added on the strength of the text.
 
 例題36 比の合成 has no `reference/` crops — the source arrived pasted, not as a
 file — so `compare.py` skips 16–21.
+
+---
+
+# Evaluating the ai-tutor extensions (anglemark, equalangle, dimension)
+
+Three layers, cheapest and most deterministic first, all in ai-tutor:
+
+1. **Code gates** — `_static_validate`, including `code_anglemark.py` and
+   `code_dimension.py`: one element per annotation, no hand-placed value text.
+2. **Rendered-DOM audit** — `evaluation/utils/notation_audit.py`. Renders the
+   assembled figure in a BARE page (the evaluation template's own legacy halo
+   would otherwise colour the result), then reads the DOM: visible dots (B1),
+   clipped labels (E5), label overlaps (B4), non-monochrome strokes (D1), frame
+   fill (D5), every anglemark's measured sweep (A1), and each expected mark
+   present and drawn by the right element. The three elements are
+   `JXG.Composition`s and are NOT in `board.objectsList`; the audit reads
+   `board.__anglemarks`, `board.__equalangles`, `board.__dimensions`.
+3. **LLM judge** — a fourth severity metric `notation_marks.md` in the existing
+   rubric format, so the report shows it beside the other three.
+
+Evalset entries: `evaluate_dataset/figure_generation/extensions/data.jsonl` — the
+eight reference figures of 例題34–36 with their reference PNGs from this repo and
+an `expected_notation` block each; and the ADK evalset the CLAUDE.md prompt-change
+rule asks for, `google_adk/services/generate_figure/tests/eval/`.
+
+## Result for the two extensions
+
+Driven with hand-written code against the elements (no model), all eight figures
+pass every notation check: every value, unknown, bare arc, ●/○ group and length is
+present and owned by the right element; no reflex sweep, no dot, no colour. Three
+of eight are fully clean; five carry only E5 clips of base or apex labels, which a
+control render without the elements reproduces byte for byte — the auto-fit's
+behaviour in a host-shaped frame, not the elements'. The LLM layer could not be
+run here: the runner requires `LITELLM_EVAL_API_KEY`, a budget-separated virtual
+key, and refuses to fall back to a direct Google call.
+
+## What actually went wrong
+
+1. **The first audit blamed the elements for its own three bugs.** Compositions
+   are absent from `objectsList` (so every element counted as missing); the
+   inventory scanned the assembled scaffold and counted the element source's own
+   header-comment examples; and a fixed 760×560 frame made the fit clip. A first
+   run of a new auditor is a test of the auditor.
+2. **The audit caught a wrong given in my own dataset** — see E8.
+3. **The work was stashed twice between sessions** and the tree switched
+   branches; nothing was lost, but the eval files only survived because the
+   stash was taken with `-u`, and the dataset only because `evaluate_dataset/`
+   is a submodule. Check `git stash list` and the branch before rebuilding.
+
+---
+
+# Arc size: the house style moved, and only ai-tutor followed
+
+The angle notation shipped with a 1.5-label-height arc. Measured on the rendered
+figure that is 19.2% of the square's side in 例題35(1) — and the 15 figures in
+this repo, drawn by hand, use 0.62–1.15 board units, i.e. 18.2% on the same
+figure. The two systems agreed. The style owner looked at the render and called
+it too big by half, so the extension is now 0.75 (9.6%) with the right-angle
+square scaled to match.
+
+**The reference figures in this repo were NOT changed** and still draw at ~19%.
+Each `angleMark()` call passes its own radius (17 call sites across 15 figures),
+so there is no single constant to turn; halving them would also invalidate 15
+committed renders. Until that is done, a side-by-side of an ai-tutor figure
+against `figures/NN-name/render.png` will disagree on arc size by 2×, and that
+disagreement is expected rather than a defect.
+
+The measurement lesson is rule B10's second half: an em is 0.62 board units in
+`_lib.js` and came out 0.435 in ai-tutor on the same figure, so the two systems
+cannot be compared by their em constants at all.

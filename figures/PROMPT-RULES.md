@@ -171,6 +171,28 @@ Moving the letter fails at every division point simultaneously. Pull both ends
 in by about 0.07 of the span and every letter on the line is clear, with nothing
 else changed.
 
+**B10. An angle arc measures about 10% of the figure's reference length, not
+20%.** Settled 2026-09-04 by measurement, against the eye of the person who
+owns the style: the notation shipped at 1.5 label heights, which renders at
+**19.2%** of a square's side once the auto-fit has settled — a wide annulus for
+a 70° angle where the page prints a tick of a curve. Halved to 0.75 label
+heights (**9.6%**). The right-angle square scales with it (0.6 × the arc
+radius), or the one angle that is not an arc becomes the heaviest mark in the
+figure.
+
+The equal-angle GLYPH does not scale with it: its radius is set by whether the
+glyph fits its wedge, not by legibility of a curve. A trisected 50° angle has
+half-angle 8°, so the wedge is only `r·sin 8°` wide — at 0.75 that is 0.11
+label heights against a 0.16 glyph, and the mark spills over both arms. It
+stays at 1.5.
+
+**Sizes are in label heights, and a label height is not the same length in both
+systems.** `_lib.js` sets `fontSize = 0.62 · board.unitX`, so an em is 0.62
+board units by construction; ai-tutor sets it from the canvas diagonal and then
+re-fits, so an em came out 0.435 board units on the same figure. Comparing the
+two by their em constants says they agree when the pictures do not. Measure the
+arc as a fraction of a length in the figure.
+
 ---
 
 ## F. When NOT to draw
@@ -312,7 +334,26 @@ side by side at the same height.
 These are cheap, deterministic, and catch what the model cannot see. Items 3, 5
 and 7 now run automatically: `render.py` evaluates a DOM audit after every figure
 builds and prints `WARN` lines against these numbers. The rest are still on the
-author.
+author. In ai-tutor the same audit is `evaluation/utils/notation_audit.py`, run
+by `evaluation.execute.run_extension_audit` (the elements alone) and before the
+LLM judge inside `evaluation.execute.run_figure_generation` — and it also checks
+each mark the source figure shows (`expected_notation`) reached the page through
+the right element, which is the question an extension has to answer.
+
+**E8. Verify an EXPECTED value by measuring the drawn geometry, not by reading
+the figure.** The ai-tutor audit reports every `anglemark`'s measured sweep.
+That is how a wrong given in the evaluation dataset was caught: a "right angle
+at F" written into 例題35(1) measured 115°, because the perpendicular belongs to
+例題36(1) and had been carried across by memory. A test set is a reading of the
+source too, and rule F2 applies to it.
+
+**E9. Audit in the frame the host will give the figure, never a fixed one.**
+`board.figureAspectRatio` is stamped for the host to shape its container BEFORE
+the auto-fit runs; a fixed frame of another aspect makes the fit clip both ends
+and every label there reports as cut off. A width floor must grow the height,
+not clamp the width. Confirm any residual clipping with a control render that
+removes the element under test — identical clipping means the frame, not the
+element.
 
 1. Every marked angle sweeps < 180° (catches A1).
 2. Every stated measure holds numerically on the finished coordinates (A2/A3).

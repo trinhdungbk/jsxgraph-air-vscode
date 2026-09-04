@@ -237,7 +237,85 @@ Two are worth remembering:
 ## Not built
 
 例題35 has no `reference/` crops — the source arrived as a pasted image rather
-than a file, so `compare.py` skips 07–12. Drop crops at 4x into
+than a file, so `compare.py` skips 07–12. Drop 4x crops into
+`figures/reference/` if side-by-side comparison is needed.
+
+---
+
+# 例題37 — midpoint theorem and centroid figures
+
+Figures 24–28 reproduce the question figures, solution figures, and theorem
+note diagrams for 例題37.
+
+## 1. Question and solution are not the same drawing
+
+The question figure carries the unknowns and given values; the solution figure
+carries the proof layer.  Reusing one JSXGraph construction and simply changing
+text misses the textbook style.  The answer's figures need extra evidence:
+midpoint ticks, dotted auxiliary segments, heavier argued segments, and result
+labels such as `12`, `24`, and `18`.
+
+Rule: draw the question and the answer as separate assets, even when they share
+the same coordinates.  The shared geometry should be factored mentally, but the
+ink belongs to different layers.
+
+## 2. Midpoint relationships must be true of the coordinates
+
+In 例題37(1), the solution says E and D are midpoints of AF and AC, and F is the
+midpoint of BE.  Those two statements force F and E to be the trisection points
+of AB:
+
+```
+F = (A + 2B) / 3
+E = (2A + B) / 3
+D = midpoint(A, C)
+G = midpoint(B, D)
+```
+
+Placing F and E by eye can still look close to the scan, but the derived
+midline ratios no longer hold on the rendered diagram.  The figure then teaches
+the wrong proof.
+
+Rule: when the answer uses midpoint theorem, solve the midpoint constraints
+first, then place labels and braces around the resulting geometry.
+
+## 3. A centroid diagram needs the 2:1 geometry, not just a label
+
+For 例題37(2), `G` is the centroid and `M` is the midpoint of AC.  The median
+division must be constructed as:
+
+```
+M = midpoint(A, C)
+G = along(B, M, 2 / 3)
+```
+
+Only after that do the length labels make sense: `GM = 4` implies `BG = 8`, and
+`AM = 6` implies `MC = 6`.  If G is moved to a visually convenient spot, the
+answer text may still say `2:1`, but the drawing contradicts it.
+
+Rule: centroid figures always derive the centroid from the triangle vertices
+and midpoint, then annotate the ratio.  Do not place G freehand.
+
+## 4. Captions and proof text are a separate layout layer
+
+The first rendered solution figure passed most geometry checks but had `図1`
+competing with the lower diagram's `A` label, and the solution text for (2)
+overlapped itself.  JSXGraph's audit can catch clipped text, but it cannot judge
+whether proof text is visually fighting the diagram.
+
+Rule: reserve explicit space for captions and explanation text before drawing
+labels.  Captions belong below the corresponding mini-figure; theorem/result
+text belongs in a side column with smaller type than vertex labels.
+
+## 5. Margin theorem diagrams should stay sparse
+
+The right-side notes in the source are reminders, not worked examples.  The
+midline note needs only triangle ABC, midpoint ticks, MN, and the formula.  The
+centroid note needs the three medians, G, and a single 2:1 cue.  Adding all
+values from the problem makes the note read as another solution figure.
+
+Rule: theorem notes use the fewest marks that state the theorem.  Problem
+values (`x`, `y`, `4`, `6`) do not belong in the theorem note.
 `figures/reference/q1-square.png` and so on and the sheets appear with no other
 change.
 

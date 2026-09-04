@@ -238,6 +238,33 @@ C to AE, find ∠DCF — could not be built from the pasted page: at that resolu
 neither *what the 30° subtends* nor *what point G is* was legible, and both
 change the construction. A guessed reading produces a figure whose own marked
 angle is false, looks finished, and is permanently un-diagnosable (rule A2/A4).
+
+---
+
+## H. Question/answer layer rules
+
+**H1. Draw the question and the answer as different layer states.** The question
+shows givens and unknowns; the answer adds the proof marks.  A solution figure
+for midpoint theorem or centroid work should add ticks, dotted auxiliaries,
+heavier argued segments, and derived values.  Do not merely copy the question
+figure and append answer text.
+
+**H2. Midpoint and centroid constraints are coordinate constraints.** If the
+solution says M is a midpoint, compute it with `midpoint()`.  If G is a
+centroid on median BM, compute it with `along(B, M, 2 / 3)`.  If nested midpoint
+conditions force trisection points, solve those constraints instead of placing
+the points by eye.
+
+**H3. Captions and proof text must not share seats with geometry labels.**
+`図1`, `図2`, theorem snippets, and answer text are a separate layout layer.
+Make a reserved side column or vertical gap for them before tuning labels.
+Audit catches clipping, but only a visual pass catches text that is technically
+inside the board while overlapping another label.
+
+**H4. Margin theorem diagrams are sparse theorem reminders.** They carry only
+the marks needed to state the theorem: midpoint ticks and `MN // BC` /
+`MN = 1/2 BC`, or medians through a centroid with one `2:1` cue.  They should
+not inherit the problem's unknowns, values, or full proof layer.
 The cost of holding was one question: told the 30° is ∠DEC, the rest fell out
 (E on BD produced, ∠DCF = 15°, and triangle ACE equilateral) and F2 then
 confirmed it three ways. G is still unread, so the figure ships without it and

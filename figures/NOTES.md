@@ -568,3 +568,87 @@ disagreement is expected rather than a defect.
 The measurement lesson is rule B10's second half: an em is 0.62 board units in
 `_lib.js` and came out 0.435 in ai-tutor on the same figure, so the two systems
 cannot be compared by their em constants at all.
+
+---
+
+# 問題 比の合成 (figures 22–23) — what actually went wrong
+
+The 問題 that follows 例題36, same chapter, same 次の□ABCDにおいて…: two question
+panels, no 解説 on the page.
+
+| | |
+|---|---|
+| 22 | (1) AG:GH:HC — E on AD at ③:④, F the midpoint of DC, BE and BF cutting AC at G and H |
+| 23 | (2) AG:GE — F on AD at ②:①, E on DC at □2:□1, AE crossing BF at G |
+
+## 1. The reading was settled without a crop, by shearing the figure
+
+The panels are 210px wide with eight labels each; no offset in them is
+trustworthy. What decided both constructions instead: **the answer cannot depend
+on the parallelogram's shape, because nothing in either question fixes it.**
+
+Rebuilding each candidate reading on four parallelograms — lean 0.85, 1.9, −1.2
+and 3.5 on a base of 6, rises 4.25, 4.25, 2.0 and 7.0 — returned
+
+```
+(1) AG:GH:HC = 1.0000 : 1.2222 : 1.1111   = 9 : 11 : 10    on all four
+(2) AG:GE    = 1.0000 : 1.1667            = 6 : 7          on all four
+```
+
+which is rule A7, and it is the strongest check available on a page this small.
+It is also what ruled out the alternative for (2): reading the second line as BD
+rather than BF gives a clean 3:2 and leaves F, which the page marks and labels,
+doing nothing — and a mark the figure carries but the answer never uses is a
+misreading, not a redundancy.
+
+Both compositions then came out as the 例題36(1) pattern, which is confirmation
+of a different kind:
+
+- (1) AG:GC = AE:CB = ③:⑦ and AH:HC = AB:CF = □2:□1; ×3 and ×10 both make 30.
+- (2) with Q = AE ∩ BC produced, AG:GQ = AF:BQ = □4:□9 and AE:EQ = ②:①; ×3 and
+  ×13 both make 39, so AG = 12 and AE = 26 of 39.
+
+## 2. An inset brace does not need staggering — and the stagger has a direction
+
+Two findings that only appear together.
+
+B9 stagger two braces on one baseline so they cannot read as a single brace
+across the whole side. But the reason they read as one is that they MEET at the
+division point — so B12's inset, which was added for an unrelated reason (the
+division point's letter), already fixes it. ③:④ over AD in 22 stays level even
+though the values differ, and E's letter sits in the gap. On DC in 23 there is
+nothing in the gap (E's letter is out east, in its wedge), so those two do
+stagger.
+
+And when they stagger, **the deeper one has to be the longer one.** DE and EC
+are 3.10 and 1.55 units; B11 caps EC at 0.47, so the pair's depth difference has
+nowhere to go but onto DE. Carrying 例題36's 0.42/0.78 over unchanged — the
+figure looks the same, after all — would have drawn EC as a semicircle.
+
+## 3. The inset has to be a distance, not a fraction
+
+B12 was first written as "about 0.07 of the span", which is what the 線分図
+needed. It fails immediately here: AF spans 4 units and FD spans 2, so the
+fractional inset gives FD half the clearance while F's letter, the thing being
+cleared, is exactly the same size on both. `braceOn` now takes board units,
+default half a letter width. Anything sized to fit a glyph is measured in ems.
+
+## 4. Arms along one line hand the letter a half-plane
+
+E in 22 and F in 23 each sit on AD with both side-arms along AD and one cevian
+leaving downward, so the widest gap is a full 180° and its bisector is the
+outward normal. That is B4 working correctly in its degenerate case — and it
+puts the letter in the same direction as the brace label above it, which is
+fine at different radii (letter 0.42, brace apex 0.42 with its label centred
+there and the arc inset clear of the letter's box). It matches the page, which
+sets A E D and ③ ④ on one row in (1) and A ② F ① D on one row in (2).
+
+## 5. Where these differ from the panels
+
+The boxed ② in (2) measures about 1.7 units east of D on the scan, which is far
+outside any brace apex B11 permits on a 3.1-unit chord. Either the number is
+parked outside its arc there — which B9 explicitly rejects, on evidence from a
+much better panel — or the offset cannot be read at 210px. The figure follows
+B9; nothing else in the panel is affected.
+
+No `reference/` crops, so `compare.py` skips 22–23.

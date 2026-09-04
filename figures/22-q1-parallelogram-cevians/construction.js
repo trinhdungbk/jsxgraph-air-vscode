@@ -1,4 +1,4 @@
-// GENERATED from figures/_lib.js + 19-s1-segment-diagram/figure.js -- edit figure.js
+// GENERATED from figures/_lib.js + 22-q1-parallelogram-cevians/figure.js -- edit figure.js
 // ---------------------------------------------------------------------------
 // JP textbook notation primitives  (prepended to every figure by render.py)
 // ---------------------------------------------------------------------------
@@ -352,55 +352,57 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 369
-// 解説36 (1) 線分図 -- BD carrying both ratios at once, which is the whole method:
-//   [1]:[2] on B-P-D, times 4  ->  <4>:<8>
-//   (3):(1) on B-Q-D, times 3  ->  <9>:<3>
-// Both totals come to <12>, so the two decompositions can finally be read off
-// one line: BP:PQ:QD = 4 : (9-4) : 3.
+// @size 650 464
+// 問題 (1) -- parallelogram ABCD with E on AD at AE:ED = (3):(4) and F the
+// midpoint of DC. BE and BF cut the diagonal AC at G and H. Find AG:GH:HC.
+//
+// Two ratios on AC, in two unit systems, composed:
+//   AG:GC = AE:CB = (3):(7)   from triangle AGE ~ CGB
+//   AH:HC = AB:CF = [2]:[1]   from triangle AHB ~ CHF
+// (3):(7) x3 and [2]:[1] x10 both total 30, so AG:GH:HC = 9 : 11 : 10.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.55, 3.45, 12.55, -3.45],
+    boundingbox: [-0.90, 5.28, 7.78, -0.92],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-// The positions ARE the answer -- P at 4 and Q at 9 of 12 is what the diagram
-// exists to establish, so they are written once, here, and everything else is
-// derived from them.
-var BD = 12, PX = 4, QX = 9;
+// Nothing in the question constrains the parallelogram, so its shape is the one
+// thing read off the scan (rule A6): base 124px, rise 88, top shifted right 17.
+// This panel and the next disagree about the lean, so each takes its own.
+var BASE = 6, RISE = 4.25, LEAN = 0.85;
 
-// Braces are inset from the division points. A brace that reaches the point it
-// bounds runs into the point's own letter, and the two cannot both be moved:
-// the letter belongs at the point and the brace belongs under the span.
-var IN = 0.28;
-function on(x) { return [x, 0]; }
+var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
-seg(on(0), on(BD));
-strokeSet([[[PX, -0.20], [PX, 0.20]], [[QX, -0.20], [QX, 0.20]]]);
+var E = along(A, D, 3 / 7),
+    F = midpoint(D, C),
+    G = meet(A, C, B, E),
+    H = meet(A, C, B, F);
 
-// The composed value sits OUTSIDE its brace, past the multiplier, so the column
-// reads inward-out as the sentence it is: [1], times 4, is <4>. Nothing can be
-// stacked inside a brace here -- QD spans 3 units of 12, and a brace on a chord
-// that short is already half a circle before anything fits under it.
-function scaled(x, depth, times, n) {
-    text(x, depth * 1.82, '&#215;' + times, 'middle', 'middle', 0.55);
-    unit(x, depth * 2.58, n, 'triangle');
-}
+closed([A, B, C, D]);
+seg(A, C);
+seg(B, E);
+seg(B, F);
 
-dimension(on(IN), on(PX - IN), '1', 1.10, 1, 'box');
-dimension(on(PX + IN), on(BD - IN), '2', 1.10, 1, 'box');
-scaled(PX / 2, 1, 4, 4);
-scaled((PX + BD) / 2, 1, 4, 8);
+ticks(D, F, 1);
+ticks(F, C, 1);
 
-dimension(on(IN), on(QX - IN), CIRCLED[2], 1.10, -1);
-// Shallower than the others because its chord is shorter, not for looks: at the
-// same 1.10 sagitta this brace is a 167-degree balloon.
-dimension(on(QX + IN), on(BD - IN), CIRCLED[0], 0.85, -1);
-scaled(QX / 2, -1, 3, 9);
-scaled((QX + BD) / 2, -1, 3, 3);
+// Level, not stacked, even though (3) and (4) differ: B12's inset already opens
+// a gap at E wide enough for E's own letter, so the pair cannot read as one
+// brace over the whole side -- which is the only thing B9's stagger buys.
+braceOn(A, E, CIRCLED[2], 0.42, 1);
+braceOn(E, D, CIRCLED[3], 0.42, 1);
 
-text(0, 0.52, 'B');
-text(PX, 0.52, 'P');
-text(QX, 0.52, 'Q');
-text(BD, 0.52, 'D');
+at(A, 0.55, rad(129.3), 'A');
+at(B, 0.55, rad(219.3), 'B');
+at(C, 0.55, rad(309.3), 'C');
+at(D, 0.55, rad(39.3), 'D');
+// E's arms leave along AD in both directions, so the whole upper half is free
+// and the letter goes straight up -- inside the braces' row, at a smaller
+// radius than their labels (rule B8's two-radii argument).
+at(E, 0.42, rad(90), 'E');
+at(F, 0.55, dir(D, C) + Math.PI / 2, 'F');
+// G and H each sit on two crossing lines; these are the downward bisectors,
+// which is the side the page labels them on.
+at(G, 0.50, rad(275.8), 'G');
+at(H, 0.50, rad(259.4), 'H');

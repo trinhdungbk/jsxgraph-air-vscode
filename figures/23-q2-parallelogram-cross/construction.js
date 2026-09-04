@@ -1,4 +1,4 @@
-// GENERATED from figures/_lib.js + 19-s1-segment-diagram/figure.js -- edit figure.js
+// GENERATED from figures/_lib.js + 23-q2-parallelogram-cross/figure.js -- edit figure.js
 // ---------------------------------------------------------------------------
 // JP textbook notation primitives  (prepended to every figure by render.py)
 // ---------------------------------------------------------------------------
@@ -352,55 +352,52 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 369
-// 解説36 (1) 線分図 -- BD carrying both ratios at once, which is the whole method:
-//   [1]:[2] on B-P-D, times 4  ->  <4>:<8>
-//   (3):(1) on B-Q-D, times 3  ->  <9>:<3>
-// Both totals come to <12>, so the two decompositions can finally be read off
-// one line: BP:PQ:QD = 4 : (9-4) : 3.
+// @size 680 436
+// 問題 (2) -- parallelogram ABCD with F on AD at AF:FD = (2):(1) and E on DC at
+// DE:EC = [2]:[1]. AE and BF cross at G. Find AG:GE.
+//
+// AE produced meets BC produced at Q, and the composition runs on AQ:
+//   AG:GQ = AF:BQ = [4]:[9]   from triangle AGF ~ QGB, AF // BQ
+//   AE:EQ = (2):(1)           from triangle EDA ~ ECQ
+// [4]:[9] x3 and (2):(1) x13 both total 39, so AG:GE = 12 : 14 = 6 : 7.
+// Q is the 解説's auxiliary point and is not on this panel.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.55, 3.45, 12.55, -3.45],
+    boundingbox: [-0.90, 5.28, 8.82, -0.95],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-// The positions ARE the answer -- P at 4 and Q at 9 of 12 is what the diagram
-// exists to establish, so they are written once, here, and everything else is
-// derived from them.
-var BD = 12, PX = 4, QX = 9;
+// This panel is sheared noticeably harder than (1) -- 38px of lean on a 120px
+// base against 17 on 124 -- and the shape is free, so the difference is kept.
+var BASE = 6, RISE = 4.25, LEAN = 1.90;
 
-// Braces are inset from the division points. A brace that reaches the point it
-// bounds runs into the point's own letter, and the two cannot both be moved:
-// the letter belongs at the point and the brace belongs under the span.
-var IN = 0.28;
-function on(x) { return [x, 0]; }
+var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
-seg(on(0), on(BD));
-strokeSet([[[PX, -0.20], [PX, 0.20]], [[QX, -0.20], [QX, 0.20]]]);
+var F = along(A, D, 2 / 3),
+    E = along(D, C, 2 / 3),
+    G = meet(A, E, B, F);
 
-// The composed value sits OUTSIDE its brace, past the multiplier, so the column
-// reads inward-out as the sentence it is: [1], times 4, is <4>. Nothing can be
-// stacked inside a brace here -- QD spans 3 units of 12, and a brace on a chord
-// that short is already half a circle before anything fits under it.
-function scaled(x, depth, times, n) {
-    text(x, depth * 1.82, '&#215;' + times, 'middle', 'middle', 0.55);
-    unit(x, depth * 2.58, n, 'triangle');
-}
+closed([A, B, C, D]);
+seg(A, E);
+seg(B, F);
 
-dimension(on(IN), on(PX - IN), '1', 1.10, 1, 'box');
-dimension(on(PX + IN), on(BD - IN), '2', 1.10, 1, 'box');
-scaled(PX / 2, 1, 4, 4);
-scaled((PX + BD) / 2, 1, 4, 8);
+braceOn(A, F, CIRCLED[1], 0.42, 1);
+braceOn(F, D, CIRCLED[0], 0.42, 1);
 
-dimension(on(IN), on(QX - IN), CIRCLED[2], 1.10, -1);
-// Shallower than the others because its chord is shorter, not for looks: at the
-// same 1.10 sagitta this brace is a 167-degree balloon.
-dimension(on(QX + IN), on(BD - IN), CIRCLED[0], 0.85, -1);
-scaled(QX / 2, -1, 3, 9);
-scaled((QX + BD) / 2, -1, 3, 3);
+// DE and EC are unequal and share the side DC, so they stack (rule B9) -- and
+// the deeper one has to be DE: EC's chord is only 1.55 units, which caps its
+// sagitta at 0.3 x 1.55 before the arc goes major (rule B11).
+var OUT = dir(D, C) + Math.PI / 2;
+dimension(D, E, '2', 0.58, 1, 'box');
+dimension(E, C, '1', 0.40, 1, 'box');
 
-text(0, 0.52, 'B');
-text(PX, 0.52, 'P');
-text(QX, 0.52, 'Q');
-text(BD, 0.52, 'D');
+at(A, 0.55, rad(122.9), 'A');
+at(B, 0.55, rad(212.9), 'B');
+at(C, 0.55, rad(302.9), 'C');
+at(D, 0.55, rad(32.9), 'D');
+at(F, 0.42, rad(90), 'F');
+// E's clear side is east, which is also where its two braces are; 0.62 keeps
+// the letter inside the nearer apex.
+at(E, 0.62, OUT, 'E');
+at(G, 0.50, rad(272.4), 'G');

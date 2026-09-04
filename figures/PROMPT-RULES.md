@@ -52,7 +52,20 @@ rise 0.82 of the base, top side shifted right 0.12 of it, measured on both
 panels and agreeing to within a pixel. Decide which of the two kinds an unstated
 quantity is before drawing it: "derive from the givens" has nothing to derive
 when the givens are silent, and "read it off the scan" is wrong the moment they
-are not.
+are not. Read it off **per panel**: 例題36's two panels agreed on the shape, and
+the two panels of the 問題 after it do not — 0.14 of the base of lean against
+0.32. Nothing makes them agree, so nothing should force them to.
+
+**A7. A ratio answer must be invariant under the figure's free parameters, and
+that is what establishes a reading.** The free parameters are exactly the ones
+A6 identifies. Recompute the answer on several of them — the 問題 pair above was
+checked on four parallelograms including a left-leaning one and a squat one, and
+returned 9:11:10 and 6:7 every time — and a candidate reading whose answer MOVES
+is reading a constraint the question never gave. This is far stronger evidence
+than "the answer came out a nice number" (F2's warning), costs one loop, and
+needs no crop: it is the one check that can settle a reading off an illegible
+panel.
+*Check: the answer is identical on at least three random admissible shapes.*
 
 ---
 
@@ -84,6 +97,14 @@ first.** C in 例題36(2) carries five: two sides of ABCD, two dotted
 half-diagonals, and the hatched region's boundary. The gap left over is a single
 45° sector, and any offset picked by eye lands on one of the five. Enumerate the
 arm directions, take the widest gap, halve it.
+
+**Arms that all leave along one line hand the letter a whole half-plane.** E on
+AD in the 問題 above has both its side-arms along AD and one cevian leaving
+downward, so the widest gap is a full 180° and its bisector is exactly the
+outward normal — the degenerate case the rule handles correctly, and the case
+where the letter and a brace label both want "straight up". They coexist at
+different radii, the letter inside (B8's two-radii argument, applied to a label
+against a mark rather than two marks).
 
 **Count the marks too, and place them first.** A mark and a label want the same
 seat, and the mark is the one that cannot move: an equal-angle mark belongs on
@@ -127,10 +148,16 @@ the arc sits under. 例題36 measures AB, FG, BD and DC this way, and it is the
 same brace `geometry_2d_dimension` describes for the generated figures.
 Two lengths that share a baseline (BD and DC on BC) are told apart by giving
 them **different sagittas** so the arcs stack; equal sagittas read as one long
-brace under the whole base. **Only when the values differ.** BE and EC in
-例題36's 解説(1) are both boxed ①, and staggering them would deny the equality
-the ticks assert. Stagger so two braces do not read as one measurement; stay
-level to say two measurements are the same. They must also bulge the **same way**: a side picked
+brace under the whole base. **Only when the values differ, and only when the
+division point is bare.** BE and EC in 例題36's 解説(1) are both boxed ①, and
+staggering them would deny the equality the ticks assert. And ③:④ over AD in
+the 問題 after it stays level despite differing, because B12's inset already
+opens a gap at E — a gap holding E's own letter — so the pair cannot read as one
+brace. Stagger only when nothing sits between the two arcs where they meet;
+that is the entire failure the stagger was invented for.
+**When you do stagger, the deeper brace is the one with the LONGER chord.** DE
+and EC on DC are 3.10 and 1.55 units, and the short one's sagitta is capped at
+0.47 by B11 — so the depth the pair needs has nowhere to go except onto DE. They must also bulge the **same way**: a side picked
 independently per mark comes out alternating, and the pair reads as a wave
 rather than as two braces. Decide the side once for the line.
 *Check: the arc's apex is on the far side of the segment from the figure, the
@@ -162,14 +189,22 @@ them; read outward the column is then the sentence it should be, □1 ×4 △4.
 Discover this before laying the diagram out, not after: every arrangement that
 puts a row inside a brace dies on the shortest span, and there is no nudge that
 rescues it.
+A sagitta is never carried over from a figure that looked similar: 0.78 drew
+例題36's FC correctly and would have made this 問題's EC a semicircle, because
+the chord fell from 3.3 to 1.55 units. Compute the cap from the chord at hand.
 *Check: every brace has h/c ≤ 0.3.*
 
 **B12. Inset a brace from the division points it bounds.** A brace that reaches
 its own endpoint arrives exactly where that point's letter is, and neither can
 give way — the letter belongs at the point and the brace belongs under the span.
 Moving the letter fails at every division point simultaneously. Pull both ends
-in by about 0.07 of the span and every letter on the line is clear, with nothing
+in by half a letter width and every letter on the line is clear, with nothing
 else changed.
+**The inset is an absolute distance, not a fraction of the span.** A fraction is
+the obvious first guess and it is wrong: AF spans 4 units and FD spans 2, so a
+fractional inset gives FD half the clearance — while the letter it has to clear,
+F, is the same size on both. `braceOn` takes board units and defaults to
+0.5 em.
 
 **B10. An angle arc measures about 10% of the figure's reference length, not
 20%.** Settled 2026-09-04 by measurement, against the eye of the person who
@@ -255,7 +290,8 @@ update:
 |---|---|
 | a ratio unit strokes its enclosure round the rendered glyph, because U+20DE / U+20E4 are not in the face | B10 |
 | `dimension` clamps its sagitta to 0.3 of the chord instead of emitting a major arc | B11 |
-| `dimension` insets both ends when its endpoints are named points | B12 |
+| `dimension` insets both ends, in em and not in span-fractions, when its endpoints are named points | B12 |
+| the staggered brace of a pair is chosen by chord length, not by drawing order | B9, B11 |
 | the label pass runs after every mark has claimed its wedge | B4 |
 
 **G3. "Emitted only when the spec calls for it" must be asserted at the
@@ -365,6 +401,10 @@ element.
    label throws nothing and appears nowhere** (this cost nine missing letters).
 6. Every element's stroke is black or grey (D1).
 7. Rendered content bounds fill ≥ 80% of the canvas in the long dimension (D5).
+8. The answer is invariant under the figure's free parameters: rebuild it on
+   three random admissible shapes and compare (A7). This is the only check in
+   the list that validates the *reading* rather than the drawing, and it is the
+   cheapest one here.
 
 Check 5 deserves emphasis: JSXGraph renders text as absolutely-positioned HTML.
 A label placed outside the board is simply clipped — the object exists, the

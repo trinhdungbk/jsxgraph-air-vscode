@@ -262,6 +262,18 @@ function dimension(p, q, str, bulge, side, kind) {
     return label;
 }
 
+// A brace inset from the two points it bounds. A brace that reaches its own
+// endpoint arrives exactly where that point's letter is, and neither can give
+// way -- the letter belongs at the point and the brace belongs under the span.
+// The inset is an absolute distance, NOT a fraction of the span: the letter it
+// has to clear is the same size on a span of 2 as on a span of 8, and a
+// fractional inset leaves the short span's letter touching the arc.
+function braceOn(p, q, str, bulge, side, kind, inset) {
+    var d = inset === undefined ? 0.5 * TYPE : inset;
+    return dimension(polar(p, d, dir(p, q)), polar(q, d, dir(q, p)),
+                     str, bulge, side, kind);
+}
+
 // Half the rendered width of a label, in board units, plus the breathing space
 // a break needs either side of it.
 function labelHalfWidth(label, str) {

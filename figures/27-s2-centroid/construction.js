@@ -380,7 +380,7 @@ dimension(B, G, '<i>y</i>', 0.34, -1);
 
 unit(2.10, 1.48, 2, 'circle', 0.50);
 unit(4.55, 2.78, 1, 'circle', 0.50);
-text(7.55, 4.60, 'M is midpoint', 'left', 'middle', 0.40);
+text(7.55, 4.60, 'M は AC の中点', 'left', 'middle', 0.40);
 text(7.55, 3.75, 'BG : GM = 2 : 1', 'left', 'middle', 0.40);
 text(7.55, 1.20, 'Ans.  <i>x</i> = 6,  <i>y</i> = 8', 'left', 'middle', 0.40);
 

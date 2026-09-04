@@ -261,10 +261,21 @@ Make a reserved side column or vertical gap for them before tuning labels.
 Audit catches clipping, but only a visual pass catches text that is technically
 inside the board while overlapping another label.
 
-**H4. Margin theorem diagrams are sparse theorem reminders.** They carry only
+**H4. Use compact textbook notation inside figures.** English prose inside a
+rendered geometry asset reads like app UI, not like the source page.  Prefer
+short Japanese theorem phrases, formulas, and `Ans.` result lines; keep longer
+explanation in the surrounding solution text.
+
+**H5. Margin theorem diagrams are sparse theorem reminders.** They carry only
 the marks needed to state the theorem: midpoint ticks and `MN // BC` /
 `MN = 1/2 BC`, or medians through a centroid with one `2:1` cue.  They should
 not inherit the problem's unknowns, values, or full proof layer.
+
+**H6. A compare run does not cover figures without crops.** `render.py` can
+audit every figure, but `compare.py` only emits side-by-side images where
+`figures/reference/<name>.png` exists.  For new figures, add crops first; without
+them, use a contact sheet against older renders and report that the comparison
+is style-level rather than source-level.
 The cost of holding was one question: told the 30° is ∠DEC, the rest fell out
 (E on BD produced, ∠DCF = 15°, and triangle ACE equilateral) and F2 then
 confirmed it three ways. G is still unread, so the figure ships without it and

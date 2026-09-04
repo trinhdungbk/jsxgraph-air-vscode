@@ -358,7 +358,7 @@ function bulgeArc(p, q, h, s) {
 // them read as another worked example instead of a theorem reminder.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.65, 10.15, 7.65, -0.45],
+    boundingbox: [-0.65, 10.15, 7.65, -0.95],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
@@ -375,7 +375,8 @@ function midlineNote(dx, dy) {
     at(C, 0.28, rad(320), 'C');
     at(M, 0.25, rad(170), 'M');
     at(N, 0.25, rad(10), 'N');
-    text(dx + 2.7, dy - 0.70, 'MN = 1/2 BC,  MN // BC', 'middle', 'top', 0.46);
+    text(dx + 2.7, dy - 0.70, 'M, N が中点  ⇔  MN = 1/2 BC', 'middle', 'top', 0.42);
+    text(dx + 2.7, dy - 1.28, 'MN // BC', 'middle', 'top', 0.42);
 }
 
 function centroidNote(dx, dy) {
@@ -393,8 +394,8 @@ function centroidNote(dx, dy) {
     at(B, 0.28, rad(220), 'B');
     at(C, 0.28, rad(320), 'C');
     at(G, 0.25, rad(310), 'G');
-    text(dx + 2.7, dy - 0.70, 'Centroid divides each median 2 : 1', 'middle', 'top', 0.46);
+    text(dx + 2.7, dy - 0.70, '重心は中線を 2 : 1 に分ける', 'middle', 'top', 0.42);
 }
 
 midlineNote(0.55, 6.25);
-centroidNote(0.55, 0.85);
+centroidNote(0.55, 0.35);

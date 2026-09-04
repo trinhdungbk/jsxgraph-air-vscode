@@ -307,6 +307,15 @@ Rule: reserve explicit space for captions and explanation text before drawing
 labels.  Captions belong below the corresponding mini-figure; theorem/result
 text belongs in a side column with smaller type than vertex labels.
 
+The 28-figure contact sheet exposed a second version of the same problem:
+English explanatory prose looked like app UI, not like a Japanese textbook
+figure.  Formula text and short Japanese theorem phrases matched the existing
+figures better.
+
+Rule: inside a rendered figure, prefer compact math/Japanese notation over
+English prose.  Put longer explanation in the surrounding solution text, not in
+the JSXGraph asset.
+
 ## 5. Margin theorem diagrams should stay sparse
 
 The right-side notes in the source are reminders, not worked examples.  The
@@ -316,6 +325,18 @@ values from the problem makes the note read as another solution figure.
 
 Rule: theorem notes use the fewest marks that state the theorem.  Problem
 values (`x`, `y`, `4`, `6`) do not belong in the theorem note.
+
+## 6. Compare coverage is only as good as the reference crops
+
+Running `render.py` over all 28 figures verifies every render and DOM audit, but
+`compare.py` only emits side-by-side sheets for folders whose matching crop
+exists in `figures/reference/`.  At the time 例題37 was added, that meant six
+compare sheets for figures 01–06; figures 07–28 had no reference crop and had to
+be checked by contact sheet and visual consistency.
+
+Rule: when adding a new page, add the crop first if the goal is "match the
+source".  Without the crop, the best available comparison is style consistency
+against old renders, not pixel-level source matching.
 `figures/reference/q1-square.png` and so on and the sheets appear with no other
 change.
 

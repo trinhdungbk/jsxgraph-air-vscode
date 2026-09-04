@@ -30,6 +30,10 @@ function rad(d) { return d * Math.PI / 180; }
 function polar(p, r, a) { return [p[0] + r * Math.cos(a), p[1] + r * Math.sin(a)]; }
 function dir(p, q) { return Math.atan2(q[1] - p[1], q[0] - p[0]); }
 function midpoint(p, q) { return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; }
+// The point t of the way from p to q. A division point given as a ratio is
+// placed with this rather than typed in as coordinates -- 1:2 has to be true of
+// the finished drawing, not merely written beside it.
+function along(p, q, t) { return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; }
 
 // An arc is always drawn counter-clockwise from `from`; lifting `to` above
 // `from` is what keeps a 20-degree wedge from rendering as its 340-degree
@@ -240,36 +244,21 @@ function rightAngle(v, a1, a2, size) {
 // `side` is +1 to bulge left of p->q, -1 to bulge right; `bulge` is the sagitta
 // in board units, so two dimensions sharing a baseline can be stacked by giving
 // them different bulges instead of overlapping. Both must take the SAME side.
-function dimension(p, q, str, bulge, side) {
-    var h = bulge || 0.5,
-        s = side === undefined ? -1 : side,
-        chord = Math.sqrt((q[0] - p[0]) * (q[0] - p[0]) + (q[1] - p[1]) * (q[1] - p[1])),
-        outward = dir(p, q) + s * Math.PI / 2,
-        mid = midpoint(p, q),
-        // Circle through p, q and the apex: R = h/2 + chord^2/(8h).
-        r = (chord * chord / 4 + h * h) / (2 * h),
-        // h - r is negative, so this steps AWAY from the bulge.
-        centre = polar(mid, h - r, outward),
-        apex = polar(mid, h, outward),
-        from = dir(centre, p),
-        to = dir(centre, q),
-        // Of the two arcs between p and q, take the one the apex lies on.
-        a0 = sweep(from, dir(centre, apex)) <= sweep(from, to) ? from : to,
-        a1 = a0 === from ? to : from,
-        label = text(apex[0], apex[1], str),
-        // Absolute angles from here on. a1 is a raw atan2 value and may be
-        // numerically BELOW the apex angle; feeding that to arc() lets sweep()
-        // lift it by a full turn and the mark comes out as a whole circle.
-        span = sweep(a0, a1) - a0,
-        end = a0 + span,
-        mid_a = a0 + span / 2,
+function dimension(p, q, str, bulge, side, kind) {
+    var g = bulgeArc(p, q, bulge || 0.5, side === undefined ? -1 : side),
+        label = text(g.apex[0], g.apex[1], str),
         // Measured off the rendered glyphs, not guessed from the character
         // count: '3' and '10' need very different gaps, and the node exists as
-        // soon as the text does.
-        half = labelHalfWidth(label, str),
-        cut = Math.min(half / r, span / 2 * 0.72);
-    arc(centre, r, a0, mid_a - cut);
-    arc(centre, r, mid_a + cut, end);
+        // soon as the text does. An enclosed unit is wider than its digit.
+        half = kind ? enclose(label, kind) + 0.30 * TYPE : labelHalfWidth(label, str),
+        // Absolute angles from here on. The far end is a raw atan2 value and may
+        // be numerically BELOW the apex angle; feeding that to arc() lets
+        // sweep() lift it by a full turn and the mark comes out as a whole
+        // circle across the figure.
+        mid_a = g.a0 + g.span / 2,
+        cut = Math.min(half / g.r, g.span / 2 * 0.72);
+    arc(g.centre, g.r, g.a0, mid_a - cut);
+    arc(g.centre, g.r, mid_a + cut, g.a0 + g.span);
     return label;
 }
 
@@ -280,6 +269,75 @@ function labelHalfWidth(label, str) {
         size = px(TYPE),
         w = node && node.offsetWidth ? node.offsetWidth : 0.6 * size * String(str).length;
     return (w / 2 + 0.4 * size) / board.unitX;
+}
+
+// ---------------------------------------------------------------------------
+// Ratio units
+// ---------------------------------------------------------------------------
+// 比の合成 works by carrying two ratios in DIFFERENT unit systems until they are
+// scaled to a common one, and the page tells the systems apart by the shape
+// around the digit: circled, boxed, triangled. Drop the shapes and the figure
+// stops meaning anything -- (1) reads "1 : 2" against "3 : 1" with no way to
+// see that the units differ.
+//
+// Only the circled digits exist in Unicode. U+20DE and U+20E4, the combining
+// enclosing square and triangle, are absent from Times New Roman: they render
+// as nothing at all, silently, which is exactly the failure E5 was written for.
+// So the box and the triangle are STROKED around the glyph at its measured
+// size.
+
+var GLYPH = { strokeColor: 'black', strokeWidth: 1.1, fixed: true, highlight: false };
+
+// Draws the enclosure around an existing label and returns its half-width in
+// board units, so a caller that has to make room for the mark can ask for it.
+function enclose(label, kind) {
+    var w = label.rendNode.offsetWidth / board.unitX,
+        h = label.rendNode.offsetHeight / board.unitY,
+        x = label.X(), y = label.Y(), s, r;
+    if (kind === 'box') {
+        s = Math.max(w + 0.44 * TYPE, 0.88 * TYPE) / 2;
+        closed([[x - s, y - s], [x + s, y - s], [x + s, y + s], [x - s, y + s]], GLYPH);
+        return s;
+    }
+    // An upward triangle wastes its lower corners, so the digit needs a bigger
+    // circumradius than a box of the same apparent weight. The glyph sits at
+    // the centroid, which for an equilateral triangle is also the incentre.
+    r = Math.max(w, 0.62 * h) * 1.30;
+    closed([polar([x, y], r, rad(90)), polar([x, y], r, rad(210)),
+            polar([x, y], r, rad(330))], GLYPH);
+    return r * 0.87;
+}
+
+// One ratio unit, free-standing: unit(x, y, 3, 'circle') is the glyph, the two
+// others are a digit inside a drawn shape.
+function unit(x, y, n, kind, size) {
+    var label;
+    if (kind === 'circle') { return text(x, y, CIRCLED[n - 1], 'middle', 'middle', size); }
+    label = text(x, y, String(n), 'middle', 'middle', size);
+    enclose(label, kind);
+    return label;
+}
+
+// The circle through p and q whose apex stands `h` off the chord, `s` = +1 to
+// bulge left of p->q. Shared by every brace-shaped mark so they cannot drift
+// apart; `forward` says whether the counter-clockwise sweep runs p->q, which is
+// what an arrowhead needs and an unheaded brace does not.
+function bulgeArc(p, q, h, s) {
+    var dx = q[0] - p[0], dy = q[1] - p[1],
+        chord = Math.sqrt(dx * dx + dy * dy),
+        outward = dir(p, q) + s * Math.PI / 2,
+        mid = midpoint(p, q),
+        r = (chord * chord / 4 + h * h) / (2 * h),
+        centre = polar(mid, h - r, outward),
+        apex = polar(mid, h, outward),
+        from = dir(centre, p),
+        to = dir(centre, q),
+        a0 = sweep(from, dir(centre, apex)) <= sweep(from, to) ? from : to;
+    return {
+        centre: centre, r: r, apex: apex, out: outward, a0: a0,
+        span: sweep(a0, a0 === from ? to : from) - a0,
+        forward: a0 === from
+    };
 }
 
 // @size 620 583

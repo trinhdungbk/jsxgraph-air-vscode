@@ -1,4 +1,4 @@
-// GENERATED from figures/_lib.js + 11-s2-triangles/figure.js -- edit figure.js
+// GENERATED from figures/_lib.js + 18-s1-parallelogram-ratio/figure.js -- edit figure.js
 // ---------------------------------------------------------------------------
 // JP textbook notation primitives  (prepended to every figure by render.py)
 // ---------------------------------------------------------------------------
@@ -340,53 +340,60 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 430
-// 解説35 (2) -- triangles BCD and ACE are congruent (BC = AC, CD = CE, and the
-// included angle is 60 + 60 at C), so the marked angles pair off. The exterior
-// angle of triangle DBC at C is 60, hence dot + ring = 60; the same theorem on
-// triangle PBE makes angle APB = 60, so angle BPE = 120.
+// @size 610 518
+// 解説36 (1) -- the question figure with every side carried in its own unit
+// system, which is what makes the two similar-triangle ratios comparable:
+//   BP:PD = BE:AD = [1]:[2]   from triangle PBE ~ PDA
+//   BQ:QD = AB:FD = (3):(1)   from triangle ABQ ~ FDQ
+// The composition itself happens on the segment diagram, figure 19.
+//
+// INCOMPLETE: the source panel also carries several arcs inside the
+// parallelogram, around P, Q and D. At the resolution the page arrived at it
+// could not be settled whether they mark the vertical angles of the two similar
+// pairs or brace the parts of BD; the two readings put ink in different places
+// and neither is recoverable from the givens. Rule F1: ship what is verified.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 4.5, 8.0, -1.0],
+    boundingbox: [-0.95, 6.15, 7.65, -1.15],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BC = 4, CE = 3.2, H = Math.sqrt(3) / 2;
+var BASE = 6, RISE = 4.9, LEAN = 0.7;
 
-var B = [0, 0], C = [BC, 0], E = [BC + CE, 0],
-    A = [BC / 2, BC * H],
-    D = [BC + CE / 2, CE * H],
-    P = meet(B, D, A, E);
+var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
-closed([A, B, C]);
-closed([D, C, E]);
+var E = midpoint(B, C),
+    F = along(D, C, 1 / 3),
+    P = meet(A, E, B, D),
+    Q = meet(A, F, B, D);
+
+closed([A, B, C, D]);
 seg(B, D);
 seg(A, E);
+seg(A, F);
 
-// The congruent pair, inked heavy: B-C-D against A-C-E.
-seg(B, C, HEAVY);
-seg(C, D, HEAVY);
-seg(D, B, HEAVY);
-seg(A, C, HEAVY);
-seg(C, E, HEAVY);
-seg(E, A, HEAVY);
+ticks(B, E, 2);
+ticks(E, C, 2);
 
-text(A[0], A[1] + 0.30, 'A', 'middle', 'bottom');
-text(B[0] - 0.16, B[1] - 0.16, 'B', 'right', 'top');
-text(C[0], C[1] - 0.30, 'C', 'middle', 'top');
-text(D[0] + 0.30, D[1] + 0.10, 'D', 'left', 'middle');
-text(E[0] + 0.16, E[1] - 0.16, 'E', 'left', 'top');
-at(P, 0.44, (dir(P, A) + dir(P, D)) / 2, 'P');
+var OUT = dir(D, C) + Math.PI / 2;
 
-// The exterior angle that drives the whole argument.
-angleMark(C, 0.72, dir(C, E), dir(C, D), '60&deg;', 0.62);
+// BE and EC are EQUAL, so their braces stay level: staggering them would deny
+// the equality the ticks assert. DF and FC are unequal and stack (rule B9).
+// 0.62 rather than 0.45 so the boxes clear the equal-length ticks, which sit at
+// the same midpoints and reach 0.16 below the base.
+dimension(B, E, '1', 0.62, -1, 'box');
+dimension(E, C, '1', 0.62, -1, 'box');
+dimension(A, D, '2', 0.55, 1, 'box');
+dimension(A, B, CIRCLED[2], 0.50, -1);
+dimension(D, F, CIRCLED[0], 0.42, 1);
+dimension(F, C, CIRCLED[1], 0.78, 1);
 
-// Both equal-angle groups sit at one radius so each group reads as a set:
-// filled for the pair carried by the congruence at B and A, open for the pair
-// at D and E.
-var MARK_R = 0.95;
-mark(B, MARK_R, dir(B, C), dir(B, D), true);
-mark(A, MARK_R, dir(A, C), dir(A, E), true);
-mark(D, MARK_R, dir(D, B), dir(D, C), false);
-mark(E, MARK_R, dir(E, A), dir(E, C), false);
+at(A, 0.55, rad(130.9), 'A');
+at(B, 0.55, rad(220.9), 'B');
+at(C, 0.55, rad(310.9), 'C');
+at(D, 0.55, rad(40.9), 'D');
+at(E, 0.50, rad(270), 'E');
+at(F, 0.62, OUT, 'F');
+at(P, 0.50, rad(165.7), 'P');
+at(Q, 0.50, rad(100.2), 'Q');

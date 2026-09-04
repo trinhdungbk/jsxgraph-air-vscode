@@ -1,5 +1,5 @@
-var board = JXG.JSXGraph.initBoard('jxgbox', {boundingbox: [-4.5, 4, 5.5, -4.5], axis: false, showNavigation: false, showCopyright: false, grid: false, keepaspectratio: true});
-board.figureAspectRatio = 1.1765;
+var board = JXG.JSXGraph.initBoard('jxgbox', {boundingbox: [-1, 4.5, 8, -1], axis: false, showNavigation: false, showCopyright: false, grid: false, keepaspectratio: true});
+board.figureAspectRatio = 1.6364;
 /* figure-scaffold:style:begin */
 (function () {
     var INK = '#000000',
@@ -65,6 +65,27 @@ board.figureAspectRatio = 1.1765;
             a.highlightStrokeOpacity = 0;
         });
     }
+    // A polygon in stock JSXGraph is visible ONLY by its fill: its own
+    // strokeColor is null and its borders carry no strokeColor key at all, so
+    // they paint stroke:none and the shape is a coloured area with no outline.
+    // Turning the fill off -- which monochrome line art must -- therefore
+    // erases the polygon completely unless its borders are given ink here.
+    // A figure whose shapes are polygons renders as a blank page otherwise.
+    ['polygon', 'regularpolygon', 'polygonalchain', 'parallelogram'].forEach(
+        function (key) {
+            var a = options[key];
+            if (!a) { return; }
+            a.strokeColor = INK;
+            a.highlightStrokeColor = INK;
+            a.borders = a.borders || {};
+            a.borders.strokeColor = INK;
+            a.borders.highlightStrokeColor = INK;
+            a.borders.strokeOpacity = 1;
+            a.borders.highlightStrokeOpacity = 1;
+            a.borders.strokeWidth = WEIGHT;
+            a.borders.highlightStrokeWidth = WEIGHT;
+        }
+    );
     options.text.strokeColor = INK;
     options.text.fontSize = SIZE;
     // cssDefaultStyle, not cssStyle: a dimension label carries its own
@@ -126,86 +147,28 @@ board.figureAspectRatio = 1.1765;
     };
 })();
 /* figure-scaffold:style:end */
-var maxShownStep = (typeof showStep === 'undefined' || showStep === null) ? Infinity : showStep;
+var pB = board.create('point', [0.0, 0.0], {name: 'B', withLabel: true, label: {offset: [-10, -10]}});
+var pC = board.create('point', [4.0, 0.0], {name: 'C', withLabel: true, label: {offset: [0, -12]}});
+var pA = board.create('point', [2.0, 3.4641], {name: 'A', withLabel: true, label: {offset: [0, 12]}});
+var pE = board.create('point', [7.0, 0.0], {name: 'E', withLabel: true, label: {offset: [10, -10]}});
+var pD = board.create('point', [5.5, 2.5981], {name: 'D', withLabel: true, label: {offset: [10, 10]}});
 
-// Let's solve the geometry exactly.
-// We want a regular pentagon ABCDE.
-// Let side length be s.
-// A is at (0, 2.5).
-// Line l is horizontal through A: y = 2.5.
-// The angle of AE with line l (to the right, i.e. positive x-direction) is 20°.
-// Since E is to the right and below A (or above? The draft has E at (2.349, 1.645), which is below A(0, 2.5)).
-// So the vector AE makes an angle of -20° with the positive x-axis.
-// Let's set s = 3.0.
-// Then E is at (0 + s * cos(-20°), 2.5 + s * sin(-20°))
-// cos(-20°) = 0.9396926, sin(-20°) = -0.3420201
-// E = (2.8191, 1.4739)
-// Since ABCDE is a regular pentagon, going counter-clockwise: A -> B -> C -> D -> E -> A.
-// Thus, the interior angle is 108°.
-// The vector EA goes from E to A. Its direction is 160°.
-// To go from E to D, we rotate EA by -108° (clockwise, since A->B->C->D->E is counter-clockwise, so E->D is clockwise relative to E->A).
-// Direction of ED = 160° - 108° = 52°.
-// D = E + (s * cos(52°), s * sin(52°))? No, let's use standard regular polygon formulas.
-// Let's define A = (0, 2.5).
-// Since we want to use JSXGraph's regularpolygon [A, B, 5], we need to find B.
-// In a regular pentagon ABCDE (counter-clockwise), the interior angle at A is 108°.
-// The side AE is at angle -20° (or 340°) from A.
-// The side AB is at angle -20° - 108° = -128° (or 232°) from A.
-// So B = A + (s * cos(-128°), s * sin(-128°))
-// cos(-128°) = -0.615661, sin(-128°) = -0.788011
-// For s = 3.0:
-// B_x = 0 + 3.0 * (-0.615661) = -1.8470
-// B_y = 2.5 + 3.0 * (-0.788011) = 0.1360
+var polyABC = board.create('polygon', [pA, pB, pC], {hasInnerPoints: false});
+var polyDCE = board.create('polygon', [pD, pC, pE], {hasInnerPoints: false});
 
-var point_a = board.create('point', [0.0, 2.5], {name: 'A', withLabel: true, label: {offset: [-10, 12], anchorY: 'bottom'}});
-var point_b = board.create('point', [-1.8470, 0.1360], {name: 'B', withLabel: true, label: {offset: [-12, -5]}});
+var sAB = board.create('segment', [pA, pB]);
+var sBC = board.create('segment', [pB, pC]);
+var sAC = board.create('segment', [pA, pC]);
+var sCE = board.create('segment', [pC, pE]);
+var sCD = board.create('segment', [pC, pD]);
+var sDE = board.create('segment', [pD, pE]);
 
-var p_l_right = board.create('point', [4.5, 2.5], {visible: false});
-var p_l_left = board.create('point', [-3.5, 2.5], {visible: false});
+var sBD = board.create('segment', [pB, pD]);
+var sAE = board.create('segment', [pA, pE]);
 
-// Line l
-var line_l = board.create('segment', [p_l_left, p_l_right], {name: '<i>l</i>', withLabel: true, label: {position: 'rt', offset: [-15, 10]}});
-line_l.setStraight(true, true);
+var pP = board.create('intersection', [sBD, sAE, 0], {name: 'P', withLabel: true, label: {offset: [-10, 10]}, strokeWidth: 2.8});
 
-// Regular pentagon ABCDE
-var poly = board.create('regularpolygon', [point_a, point_b, 5], {withLines: false, fillOpacity: 0.0});
-
-var point_c = poly.vertices[2];
-point_c.setAttribute({name: 'C', withLabel: true, label: {offset: [-10, -12], anchorY: 'top'}});
-
-var point_d = poly.vertices[3];
-point_d.setAttribute({name: 'D', withLabel: true, label: {offset: [12, -5]}});
-
-var point_e = poly.vertices[4];
-point_e.setAttribute({name: 'E', withLabel: true, label: {offset: [12, 10]}});
-
-// Create explicit segments for the pentagon sides
-var segment_ab = board.create('segment', [point_a, point_b], {strokeColor: '#333', strokeWidth: 2});
-var segment_bc = board.create('segment', [point_b, point_c], {strokeColor: '#333', strokeWidth: 2});
-var segment_cd = board.create('segment', [point_c, point_d], {strokeColor: '#333', strokeWidth: 2});
-var segment_de = board.create('segment', [point_d, point_e], {strokeColor: '#333', strokeWidth: 2});
-var segment_ea = board.create('segment', [point_e, point_a], {strokeColor: '#333', strokeWidth: 2});
-
-// Line m parallel to l through C
-var line_m = board.create('parallel', [line_l, point_c], {name: '<i>m</i>', withLabel: true, label: {position: 'rt', offset: [-15, -15]}});
-line_m.setStraight(true, true);
-
-// Helper point for line m to the right of C
-var p_m_right = board.create('point', [function() { return point_c.X() + 4.0; }, function() { return point_c.Y(); }], {visible: false});
-
-// Angles
-var angle_l_ae = board.create('angle', [p_l_right, point_a, point_e], {name: '20°', withLabel: true, radius: 0.8, label: {offset: [5, -2]}});
-var angle_x = board.create('angle', [point_d, point_c, p_m_right], {name: '<i>x</i>', withLabel: true, radius: 0.8, label: {offset: [5, 5]}});
-
-// Step-gated elements
-var segment_ad = board.create('segment', [point_a, point_d], {visible: (2 <= maxShownStep), dash: 1});
-var segment_ac = board.create('segment', [point_a, point_c], {visible: (4 <= maxShownStep), dash: 1});
-
-var polygon_aed = board.create('polygon', [point_a, point_e, point_d], {visible: (2 <= maxShownStep), fillOpacity: 0.1, withLines: false});
-var polygon_acd = board.create('polygon', [point_a, point_c, point_d], {visible: (4 <= maxShownStep), fillOpacity: 0.1, withLines: false});
-var polygon_bca = board.create('polygon', [point_b, point_c, point_a], {visible: (4 <= maxShownStep), fillOpacity: 0.1, withLines: false});
-
-board.update();
+var angleBPE = board.create('angle', [pB, pP, pE], {name: '120°', withLabel: true, radius: 0.4});
 /* figure-scaffold:fit:begin */
 (function () {
     // Frame the board on what it actually DREW, labels included.
@@ -222,7 +185,7 @@ board.update();
     // reader takes values off the axes, so the visible range is part of the
     // question).
     try {
-        var TYPE = 0.042, PAD = 0.55, PASSES = 2,
+        var TYPE = 0.042, PAD = 0.55, PASSES = 3,
             container = board.containerObj;
 
         function user(x, y) {
@@ -234,14 +197,18 @@ board.update();
             var frame = container.getBoundingClientRect(),
                 svg = container.querySelector('svg'),
                 lo = [Infinity, Infinity], hi = [-Infinity, -Infinity],
-                drawn = false, box;
+                drawn = false, box, pad, a, b;
 
+            // Measured and padded in PIXELS, converted to board units once at
+            // the end. A pad carried in board units is a different amount of
+            // ink after every refit -- the frame shrinks, the unit grows, and
+            // the margin that was half a letter-height stops being one. That
+            // is what left a label clipped by a few pixels.
             function note(left, top, right, bottom) {
-                var a = user(left, top), b = user(right, bottom);
-                lo[0] = Math.min(lo[0], a[0], b[0]);
-                hi[0] = Math.max(hi[0], a[0], b[0]);
-                lo[1] = Math.min(lo[1], a[1], b[1]);
-                hi[1] = Math.max(hi[1], a[1], b[1]);
+                lo[0] = Math.min(lo[0], left, right);
+                hi[0] = Math.max(hi[0], left, right);
+                lo[1] = Math.min(lo[1], top, bottom);
+                hi[1] = Math.max(hi[1], top, bottom);
                 drawn = true;
             }
 
@@ -260,8 +227,16 @@ board.update();
                          r.right - frame.left, r.bottom - frame.top);
                 }
             );
-            return drawn && isFinite(lo[0]) && hi[0] > lo[0] && hi[1] > lo[1]
-                ? [lo[0], hi[1], hi[0], lo[1]] : null;
+            if (!drawn || !isFinite(lo[0]) || hi[0] <= lo[0] || hi[1] <= lo[1]) {
+                return null;
+            }
+            pad = PAD * (board.options.text.fontSize || 12);
+            a = user(lo[0] - pad, lo[1] - pad);
+            b = user(hi[0] + pad, hi[1] + pad);
+            return [
+                Math.min(a[0], b[0]), Math.max(a[1], b[1]),
+                Math.max(a[0], b[0]), Math.min(a[1], b[1])
+            ];
         }
 
         function retype() {
@@ -286,13 +261,15 @@ board.update();
         // inside the container it is given.
         function fit() {
             var pass, box;
+            // retype FIRST: the type size follows the container, not the box,
+            // so it is settled before anything is measured -- measuring at one
+            // size and then growing the letters is how the frame ends up a few
+            // pixels short of the label it was fitted to.
+            retype();
             for (pass = 0; pass < PASSES; pass++) {
                 box = contentBox();
                 if (!box) { return; }
-                board.setBoundingBox(
-                    [box[0] - PAD, box[1] + PAD, box[2] + PAD, box[3] - PAD], true
-                );
-                retype();
+                board.setBoundingBox(box, true);
                 board.fullUpdate();
             }
         }

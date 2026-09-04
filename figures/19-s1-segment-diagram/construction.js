@@ -1,4 +1,4 @@
-// GENERATED from figures/_lib.js + 11-s2-triangles/figure.js -- edit figure.js
+// GENERATED from figures/_lib.js + 19-s1-segment-diagram/figure.js -- edit figure.js
 // ---------------------------------------------------------------------------
 // JP textbook notation primitives  (prepended to every figure by render.py)
 // ---------------------------------------------------------------------------
@@ -340,53 +340,55 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 430
-// 解説35 (2) -- triangles BCD and ACE are congruent (BC = AC, CD = CE, and the
-// included angle is 60 + 60 at C), so the marked angles pair off. The exterior
-// angle of triangle DBC at C is 60, hence dot + ring = 60; the same theorem on
-// triangle PBE makes angle APB = 60, so angle BPE = 120.
+// @size 700 369
+// 解説36 (1) 線分図 -- BD carrying both ratios at once, which is the whole method:
+//   [1]:[2] on B-P-D, times 4  ->  <4>:<8>
+//   (3):(1) on B-Q-D, times 3  ->  <9>:<3>
+// Both totals come to <12>, so the two decompositions can finally be read off
+// one line: BP:PQ:QD = 4 : (9-4) : 3.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 4.5, 8.0, -1.0],
+    boundingbox: [-0.55, 3.45, 12.55, -3.45],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BC = 4, CE = 3.2, H = Math.sqrt(3) / 2;
+// The positions ARE the answer -- P at 4 and Q at 9 of 12 is what the diagram
+// exists to establish, so they are written once, here, and everything else is
+// derived from them.
+var BD = 12, PX = 4, QX = 9;
 
-var B = [0, 0], C = [BC, 0], E = [BC + CE, 0],
-    A = [BC / 2, BC * H],
-    D = [BC + CE / 2, CE * H],
-    P = meet(B, D, A, E);
+// Braces are inset from the division points. A brace that reaches the point it
+// bounds runs into the point's own letter, and the two cannot both be moved:
+// the letter belongs at the point and the brace belongs under the span.
+var IN = 0.28;
+function on(x) { return [x, 0]; }
 
-closed([A, B, C]);
-closed([D, C, E]);
-seg(B, D);
-seg(A, E);
+seg(on(0), on(BD));
+strokeSet([[[PX, -0.20], [PX, 0.20]], [[QX, -0.20], [QX, 0.20]]]);
 
-// The congruent pair, inked heavy: B-C-D against A-C-E.
-seg(B, C, HEAVY);
-seg(C, D, HEAVY);
-seg(D, B, HEAVY);
-seg(A, C, HEAVY);
-seg(C, E, HEAVY);
-seg(E, A, HEAVY);
+// The composed value sits OUTSIDE its brace, past the multiplier, so the column
+// reads inward-out as the sentence it is: [1], times 4, is <4>. Nothing can be
+// stacked inside a brace here -- QD spans 3 units of 12, and a brace on a chord
+// that short is already half a circle before anything fits under it.
+function scaled(x, depth, times, n) {
+    text(x, depth * 1.82, '&#215;' + times, 'middle', 'middle', 0.55);
+    unit(x, depth * 2.58, n, 'triangle');
+}
 
-text(A[0], A[1] + 0.30, 'A', 'middle', 'bottom');
-text(B[0] - 0.16, B[1] - 0.16, 'B', 'right', 'top');
-text(C[0], C[1] - 0.30, 'C', 'middle', 'top');
-text(D[0] + 0.30, D[1] + 0.10, 'D', 'left', 'middle');
-text(E[0] + 0.16, E[1] - 0.16, 'E', 'left', 'top');
-at(P, 0.44, (dir(P, A) + dir(P, D)) / 2, 'P');
+dimension(on(IN), on(PX - IN), '1', 1.10, 1, 'box');
+dimension(on(PX + IN), on(BD - IN), '2', 1.10, 1, 'box');
+scaled(PX / 2, 1, 4, 4);
+scaled((PX + BD) / 2, 1, 4, 8);
 
-// The exterior angle that drives the whole argument.
-angleMark(C, 0.72, dir(C, E), dir(C, D), '60&deg;', 0.62);
+dimension(on(IN), on(QX - IN), CIRCLED[2], 1.10, -1);
+// Shallower than the others because its chord is shorter, not for looks: at the
+// same 1.10 sagitta this brace is a 167-degree balloon.
+dimension(on(QX + IN), on(BD - IN), CIRCLED[0], 0.85, -1);
+scaled(QX / 2, -1, 3, 9);
+scaled((QX + BD) / 2, -1, 3, 3);
 
-// Both equal-angle groups sit at one radius so each group reads as a set:
-// filled for the pair carried by the congruence at B and A, open for the pair
-// at D and E.
-var MARK_R = 0.95;
-mark(B, MARK_R, dir(B, C), dir(B, D), true);
-mark(A, MARK_R, dir(A, C), dir(A, E), true);
-mark(D, MARK_R, dir(D, B), dir(D, C), false);
-mark(E, MARK_R, dir(E, A), dir(E, C), false);
+text(0, 0.52, 'B');
+text(PX, 0.52, 'P');
+text(QX, 0.52, 'Q');
+text(BD, 0.52, 'D');

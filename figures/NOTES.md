@@ -343,3 +343,158 @@ header says so. A 4x crop of that one panel closes it.
 ## Not built
 
 例題36 has no `reference/` crops, so `compare.py` skips 13–15.
+
+---
+
+# Angle notation as a JSXGraph extension (ai-tutor)
+
+The four angle cases of 例題34 — a value (20°), an unknown (x), bare equal arcs
+(the star), ● / ○ glyphs — became two elements in ai-tutor,
+`src/interfaces/module/figure_gen/js/anglemark.js`, shipped the way `dimension`
+is: read by `board_extensions.py`, sentinel-wrapped, emitted by
+`_board_init_code(anglemarks=True)` before `initBoard` (the board deep-copies
+`JXG.Options`, so a later registration has no defaults branch), stripped again by
+`_strip_board_scaffold` before a retry is shown its own code, documented for the
+model in `jsxgraph_kb.py::_LOCAL_ELEMENTS`, gated by `validation/code_anglemark.py`,
+retrieved by `stages/retrieval.py`, mirrored to the jsxgraph fork's `extensions/`.
+
+## What actually went wrong
+
+1. **The reference implementation I meant to follow did not exist where I
+   thought.** `dimension()` lives in this repo's `_lib.js`; ai-tutor's
+   `dimension` element is a 797-line JSXGraph extension the user built between
+   sessions, on a different architecture (style and extensions travel INSIDE the
+   figure code), and my web-side theme sat in a stash it had superseded. Read the
+   target repo's `git log` before building "the same way as before".
+2. **Two values at one vertex collided** ("45°" over a nested "24°"): both on
+   their bisectors at radius+gap. Fixed in the element — each mark records its
+   seat radius; a later value at the same vertex seats outside the earlier one.
+3. **The production flag was never thrown.** See rule G3; both `dimensions=` and
+   `anglemarks=` are now computed at the two call sites from the spec.
+4. **A false alarm that cost an hour: the dots "in the wrong place".** My check
+   used the fitted board's px/unit (72) on the un-fitted render (46). The dots
+   were exactly where the maths put them. Recompute the scale from the picture
+   you are actually looking at.
+5. **Two renderer artefacts that were not the element** — bold sans labels on
+   the 1.11.1 evaluation template (its own legacy halo), and the auto-fit
+   clipping a 19-unit-wide body in a 900×420 frame (identical box with the
+   element removed). Both reported, neither "fixed" in the element.
+
+## Verified
+
+199 unit tests green (`uv run --no-sync pytest -W error tests/unit_tests/generate_figure/`),
+ruff clean, the assembled figure rendered on jsxgraph 1.11.1 and 1.12.2 with no
+error and 36 objects, control renders isolating the fit behaviour.
+
+---
+
+# 例題36 比の合成 — what actually went wrong
+
+Figures 16–21. A different 例題36 from figures 13–15, out of a different book:
+parallelogram ABCD, one ratio along BC and another along DC, and — new asset
+class — the 解説's 線分図, a bare line carrying both ratios at once.
+
+| | |
+|---|---|
+| 16 | 問題(1) BP:PQ:QD — E the midpoint of BC, F on DC at ①:②, AE and AF cutting BD |
+| 17 | 問題(2) DG:GE — E on BC at □1:□2, F on DC at ③:②, AF crossing DE |
+| 18 | 解説(1) the same figure with every side carried in its own unit system |
+| 19 | 解説(1) 線分図 — BD carrying □1:□2 and ③:① at once, scaled to △12 |
+| 20 | 解説(2) AF and BC produced to P (角出し) |
+| 21 | 解説(2) 傍注 — the extension alone, with the two similar pairs marked |
+
+## 1. Three alphabets of ratio unit, and two of them do not exist
+
+The whole method is that ①:② and □1:□2 are ratios in *different* units, which
+is why they cannot be compared until both are scaled to △. The enclosure is not
+decoration: without it 例題36(2) reads "1:2 and 3:2" and says nothing about how
+BE compares with DF.
+
+Unicode has ①-⑳ and nothing else. U+20DE and U+20E4, the combining enclosing
+square and enclosing triangle, are **absent from Times New Roman** — they render
+as nothing at all, silently, and the figure ships with a bare `1` where a boxed
+one should be. That is the E5 failure mode again: no error, no missing object,
+just missing ink. `enclose()` strokes the shape round the glyph at its measured
+`offsetWidth`/`offsetHeight` instead, and `unit(x, y, n, kind)` is the
+free-standing form.
+
+## 2. The shortest brace in the 線分図 dictated the whole layout
+
+BD divides as 4:5:3, so the four braces span 4, 8, 9 and 3 of 12 units. A brace
+is a circular arc through its endpoints, and its sagitta cannot exceed half its
+chord or the arc goes MAJOR and renders as a balloon — so the QD brace caps at
+about 0.9 while the others are comfortable at 1.1.
+
+Six layouts were tried and each died the same way. Every arrangement that seats
+the composed value △3 *inside* the ① brace needs two rows under a chord of 3,
+and there is no sagitta that gives them: 1.1 is already a 167° arc and 1.2 is a
+semicircle. It is not a spacing problem and no nudge fixes it.
+
+What works is putting the derived value and the multiplier OUTSIDE the brace, on
+the same normal, where nothing constrains them — and it reads better anyway,
+because outward from the line the column is the sentence: □1, ×4, △4.
+
+The second collision was subtler. △9 spans B→Q, so it wants x = 4.5; P sits at
+x = 4. A row holding both is impossible whichever side of the line it goes on,
+and it was only after moving the letters three times that the cause became
+clear: **a brace endpoint always lands on the letter of the point it bounds.**
+Insetting both ends of every brace by 0.28 of a 12-unit line frees every letter
+at once (rule B12), and the letters then sit on the line row unmolested.
+
+## 3. A mark and a label wanted the same seat
+
+In 21, G has four arms and two 106° gaps, and both of them carry a
+vertical-angle ● — that is what a vertical-angle pair *means*. B4's "widest gap"
+put the letter in the same wedge as a mark, and the render shows a black blob
+behind the G. The letter has to take a 74° gap. Marks are placed first because
+a mark cannot move; a letter can (rule B4, extended).
+
+## 4. The parallelogram's shape is free, so the scan owns it
+
+A4 says the scan is evidence of topology, never of proportion — but that is
+about proportions the givens fix. Nothing in either question constrains the
+parallelogram: any one answers it. So its shape was measured off both panels
+(base 138 and 130 px, rise 112, top shifted 16 and 17) and taken as base 6, rise
+4.9, lean 0.7. Rule A6 now names the distinction, because applying A4 blindly
+here would mean inventing a shape.
+
+Where the givens DO speak, they won as usual: P is where AF meets BC produced,
+which is 10 on a base of 6 — the page draws it at about 8.8, and the figure is
+1.6 base-widths wide as a result.
+
+## 5. Verified
+
+Replaying each figure's own code against the JXG stub (see Workflow above) and
+measuring the finished coordinates:
+
+| | measured | stated |
+|---|---|---|
+| 16 BE:EC, DF:FC | 1.0000, 0.5000 | 1, 1:2 |
+| 16 BP:PD, BQ:QD | 0.5000, 3.0000 | 1:2, 3:1 |
+| 16 BP:PQ:QD | 1.333 : 1.667 : 1.000 | 4:5:3 |
+| 20 CP:AD, AD:EP | 0.6667, 0.7500 | 2:3, 3:4 |
+| 20 DG:GE | 0.7500 | 3:4 |
+
+P and Q lie on BD to 4e-15; A, G, F, P are collinear exactly; P is on BC
+exactly.
+
+`dimension` was refactored onto a shared `bulgeArc`, so it now backs the ratio
+braces as well. All fifteen earlier figures re-render byte-identical in shape
+and still pass the audit.
+
+## Not built
+
+**解説(1)'s inner arcs.** The source panel carries several arcs inside the
+parallelogram, around P, Q and D. At the resolution the page arrived at it could
+not be settled whether they mark the vertical angles of the two similar pairs or
+brace the parts of BD — the two readings put ink in completely different places,
+and neither is recoverable from the givens. Figure 18 ships without them and its
+header says so (rule F1, the same call as G in figure 13). A 4x crop of that one
+panel closes it.
+
+**The [2] on CP in 解説(2).** The solution derives CP = [2] and the figure does
+not mark it; the source does not appear to either, so it was left off rather
+than added on the strength of the text.
+
+例題36 比の合成 has no `reference/` crops — the source arrived pasted, not as a
+file — so `compare.py` skips 16–21.

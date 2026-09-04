@@ -45,6 +45,15 @@ edge.** In 例題34(2) the outer trisectors end where they cross the other verte
 inner trisector produced — they hang in mid-air. Drawing them as full cevians to
 the opposite side is the single most obvious tell.
 
+**A6. The scan IS the authority on whatever the givens leave free.** A4 holds
+for proportions the givens fix. 例題36's parallelogram is fixed by nothing — any
+parallelogram answers the question — so its shape comes off the page: base 6,
+rise 0.82 of the base, top side shifted right 0.12 of it, measured on both
+panels and agreeing to within a pixel. Decide which of the two kinds an unstated
+quantity is before drawing it: "derive from the givens" has nothing to derive
+when the givens are silent, and "read it off the scan" is wrong the moment they
+are not.
+
 ---
 
 ## B. Marks and their placement
@@ -76,6 +85,13 @@ half-diagonals, and the hatched region's boundary. The gap left over is a single
 45° sector, and any offset picked by eye lands on one of the five. Enumerate the
 arm directions, take the widest gap, halve it.
 
+**Count the marks too, and place them first.** A mark and a label want the same
+seat, and the mark is the one that cannot move: an equal-angle mark belongs on
+one specific wedge's bisector, a letter will take any free direction. G in
+例題36's margin note has four arms and two 106° gaps, and BOTH carry a
+vertical-angle mark — so the letter takes a 74° gap. Run the mark pass, then the
+label pass; a label placed first lands under the mark that follows it.
+
 **B5. A label must clear lines that pass *through* its vertex, not just the arms
 that stop there.** An auxiliary line drawn through B makes any label anchored
 level with B sit on the line.
@@ -88,7 +104,13 @@ the mark says "these are equal", the letter names what they equal.
 **B7. Equal-length marks are 1/2/3 ticks at the segment midpoint** (JSXGraph
 `hatch`), one tick count per equivalence class, consistent across the figure.
 
-**B8. Two marks at one vertex need visibly different radii.** 例題35(1) puts ② and
+**B8. Two marks at one vertex need visibly different radii — and two VALUES at
+one vertex need different seats.** Different radii keep the arcs apart; the
+values then still land on each other, because both sit on nearly the same
+bisector at "radius + gap" (例題34's 108° and ④ at A; a 45° with a 24° nested in
+it). The later value seats OUTSIDE the earlier one's seat plus a label height.
+Both are mechanical once the marks at a vertex can see each other, which is the
+argument for making the mark an element rather than a recipe (see G). 例題35(1) puts ② and
 the given 70° both at D, filling the whole 90° corner between them. At similar
 radii the two arcs read as one 90° sweep and the figure silently loses its
 argument. Keep at least a 1.4× ratio, tighter arc on the wider angle.
@@ -105,11 +127,49 @@ the arc sits under. 例題36 measures AB, FG, BD and DC this way, and it is the
 same brace `geometry_2d_dimension` describes for the generated figures.
 Two lengths that share a baseline (BD and DC on BC) are told apart by giving
 them **different sagittas** so the arcs stack; equal sagittas read as one long
-brace under the whole base. They must also bulge the **same way**: a side picked
+brace under the whole base. **Only when the values differ.** BE and EC in
+例題36's 解説(1) are both boxed ①, and staggering them would deny the equality
+the ticks assert. Stagger so two braces do not read as one measurement; stay
+level to say two measurements are the same. They must also bulge the **same way**: a side picked
 independently per mark comes out alternating, and the pair reads as a wave
 rather than as two braces. Decide the side once for the line.
 *Check: the arc's apex is on the far side of the segment from the figure, the
 curve has a gap there, and the value sits in it.*
+
+**B10. A ratio unit is a digit inside a SHAPE, and the shape carries the
+meaning.** 比の合成 runs two ratios in different unit systems until it scales
+them onto a common one, and the systems are told apart by the enclosure alone:
+circled, boxed, triangled. Strip the shapes off 例題36(2) and the question reads
+"1:2 and 3:2", which says nothing whatever about how BE compares with DF. One
+shape per system, the same shape in the question figure and in its 解説, and a
+third shape for the common unit the two are scaled into.
+Only the circled digits exist in Unicode. U+20DE and U+20E4 — the combining
+enclosing square and enclosing triangle — are absent from Times New Roman and
+render as **nothing at all**, with no error and no warning: the same silent
+invisibility as a clipped label (E5), and it survives every check that counts
+objects rather than looking at them. Stroke the enclosure round the glyph at its
+rendered size instead.
+
+**B11. A brace's depth is capped by its own chord, and the shortest span in the
+figure sets the layout for all of them.** The circle through the two endpoints
+with sagitta h becomes a MAJOR arc the moment h > c/2, and the mark renders as a
+balloon; h ≤ 0.3c is the usable range. On 例題36's 線分図 the spans are 4, 8, 9
+and 3 of 12, so the QD brace caps at about 0.9 while the others sit at 1.1 — and
+**nothing can be stacked inside any brace**, because the shortest one has no
+room and a row that exists on one span must exist on all four. The derived value
+and its multiplier go OUTSIDE, on the same normal, where no chord constrains
+them; read outward the column is then the sentence it should be, □1 ×4 △4.
+Discover this before laying the diagram out, not after: every arrangement that
+puts a row inside a brace dies on the shortest span, and there is no nudge that
+rescues it.
+*Check: every brace has h/c ≤ 0.3.*
+
+**B12. Inset a brace from the division points it bounds.** A brace that reaches
+its own endpoint arrives exactly where that point's letter is, and neither can
+give way — the letter belongs at the point and the brace belongs under the span.
+Moving the letter fails at every division point simultaneously. Pull both ends
+in by about 0.07 of the span and every letter on the line is clear, with nothing
+else changed.
 
 ---
 
@@ -136,6 +196,62 @@ rather than assumed. **A reading whose answer comes out equal to its own given i
 evidence against that reading**, not a discovery — "E on BD extended" made
 ∠DCF = ∠AEC = 30° by numerical coincidence at one specific position, which no
 one designs a question around.
+
+---
+
+## G. When a rule belongs in an element, not in the prompt
+
+**G1. A placement rule the model cannot check from the code belongs in the
+element that draws the mark.** The angle notation is now two JSXGraph elements
+in ai-tutor (`anglemark`, `equalangle`, in src/interfaces/module/figure_gen/js/,
+injected into the figure by board_extensions.py like `dimension`). Four
+decisions moved out of the prompt and into code that re-runs on every board
+update, when the finished figure exists to be measured:
+
+| decision | rule it enforces |
+|---|---|
+| interior sweep — arms swapped when [from, at, to] passes 180° | A1 |
+| value seated on the bisector beyond the arc; moved out until `2·d·sin(θ/2)` holds it; past a cap, stepped across the arm | B2, B3 |
+| second mark at a vertex takes ×1.4 radius; second VALUE seats outside the first | B8 |
+| 90° with no text → corner square; lone letter → italic; glyph groups ● ○ × at one radius, no arc | C2, B6 |
+
+Every size is in label heights, not board units: a board unit is a different
+amount of ink on every figure, an em is not.
+
+**G2. A filled glyph drawn through a style layer that caps every fill is a
+thick STROKE, not a fill.** ai-tutor's monochrome layer caps `fillOpacity` on
+every create to a light tint, so a black ● built as a filled circle comes out
+grey. Draw the circle at half the glyph radius with a stroke as wide as the
+glyph and the stroke alone fills it.
+
+**G5. B10, B11, B12 and the mark-before-label pass are element rules, not
+prompt rules.** Each is a fact about the finished drawing that the model cannot
+see from the code it just wrote, and each re-decides itself on every board
+update:
+
+| decision | rule it enforces |
+|---|---|
+| a ratio unit strokes its enclosure round the rendered glyph, because U+20DE / U+20E4 are not in the face | B10 |
+| `dimension` clamps its sagitta to 0.3 of the chord instead of emitting a major arc | B11 |
+| `dimension` insets both ends when its endpoints are named points | B12 |
+| the label pass runs after every mark has claimed its wedge | B4 |
+
+**G3. "Emitted only when the spec calls for it" must be asserted at the
+production call site, not only in a test that passes the flag by hand.** The
+`dimension` element shipped with `dimensions=True` in its unit tests and
+`dimensions=` at neither of the two production `_board_init_code()` call
+sites, so no generated figure ever received it. The test proved the switch
+worked and never that it was thrown.
+
+**G4. Check the element on every renderer that will run it, and know which
+picture is the renderer's.** Two verified here: the evaluation renderer
+(jsxgraph 1.11.1 from CDN) and the web build (1.12.2 from npm). The geometry
+agreed on both; the labels did not — the evaluation template still carries its
+own bold-sans halo from before the style layer moved generation-side, and no
+serif face ever reaches it. A comparison render that shows bold sans is
+reporting that template, not the element. Likewise the auto-fit clipping a wide
+figure in a fixed 900×420 frame is the fit assuming a container already shaped
+to `figureAspectRatio`, and reproduces with the element removed.
 
 ---
 

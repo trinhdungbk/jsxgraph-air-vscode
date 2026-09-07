@@ -36,11 +36,11 @@ seg(B, D);
 seg(F, C);
 seg(E, D);
 
-equalLength(A, E, false);
-equalLength(E, F, false);
-equalLength(F, B, false);
-equalLength(A, D, false);
-equalLength(D, C, false);
+sideMark(A, E, { glyph: 'circle' });
+sideMark(E, F, { glyph: 'circle' });
+sideMark(F, B, { glyph: 'circle' });
+sideMark(A, D, { glyph: 'circle' });
+sideMark(D, C, { glyph: 'circle' });
 
 braceOn(E, D, '<i>x</i>', 0.42, 1);
 // FG and GC share the line FC. They stay level rather than stacking, because

@@ -25,8 +25,8 @@ var M = midpoint(A, C),
 closed([A, B, C]);
 seg(B, M);
 
-equalLength(A, M, false);
-equalLength(M, C, false);
+sideMark(A, M, { glyph: 'circle' });
+sideMark(M, C, { glyph: 'circle' });
 
 braceOn(A, M, '6', 0.42, 1);
 braceOn(M, C, '<i>x</i>', 0.42, 1);

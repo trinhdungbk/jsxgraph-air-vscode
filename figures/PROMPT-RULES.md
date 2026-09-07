@@ -412,6 +412,24 @@ every offset was the same wrong `[10, 10]`:
 What stays in the prompt is what the model alone knows: which points exist and
 what they are called. What leaves is every judgement about the drawing.
 
+**G13. Side notation is the SAME element as the length, and which element a
+mark takes is decided by what it can attach to.** An equal-length mark is the
+third thing that can be said about a segment, after its length and its share of
+a ratio, so it is `dimension` with no value: `{marks: 1|2|3}` for tick strokes,
+`{glyph: 'circle'|'cross'}` for a glyph on the line. It sits on the segment,
+carries no number, and has no side to choose, so none of the placement
+machinery applies to it.
+It does not replace `hatch`, which is already the tick mark on a whole segment.
+The split is mechanical: **`hatch` takes a segment ELEMENT, so a mark on a PART
+of a divided side has nothing to attach to** — AE where the drawn segment is AB
+— and creating helper sub-segments to carry the marks puts three strokes on one
+path, which is a defect a figure of 例題37 actually shipped with. `dimension`
+takes the two endpoints, so a division needs no helpers.
+Two sizes that are not interchangeable: the tick half-length is `tickLength`
+(0.45 em, calibrated for the bar form's ends) and the glyph radius is its own
+0.17 em. Drawn at `tickLength` a circle is nearly as wide as a letter and reads
+as a ring hung on the side rather than a mark on it.
+
 **G6. An attribute the element reads must be named in LOWER CASE.**
 `JXG.copyAttributes` returns every key lower-cased, so `attr.tickLength` comes
 back `undefined` however the Options block spells it, `undefined * height` is

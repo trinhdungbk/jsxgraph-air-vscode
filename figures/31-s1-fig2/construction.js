@@ -143,26 +143,43 @@ function mark(v, r, from, to, filled) {
     });
 }
 
-// An equal-length mark as this page sets it: a small circle ON the segment at
-// its midpoint, one per equal part -- not the tick strokes of B7.
+// Side notation: an equal-length mark on a segment, at its midpoint. Its
+// options are the `dimension` element's -- `{marks: 1|2|3}` for tick strokes,
+// `{glyph: 'circle'|'cross'}` for a glyph on the line -- so a figure here reads
+// like the call that draws it in ai-tutor rather than like a local invention.
 //
-// Its scope is the DIVISION, not the figure. The 中点連結定理 margin note puts an
-// open circle on both halves of AB and on both halves of AC, which are not
-// equal to one another, so the glyph reads "these parts are equal to each
-// other" and stops at the side it is on. That is worth knowing before
-// reproducing one: read as a figure-wide equivalence class it is simply false,
-// and read as an ANGLE mark -- which is what a previous attempt at this page
-// did -- it puts the marks at the wrong vertices entirely.
-function equalLength(p, q, filled, size) {
-    var c = midpoint(p, q), rr = size || 0.085;
+// The glyph's scope is the DIVISION, not the figure. The 中点連結定理 note puts
+// an open circle on both halves of AB and on both halves of AC, which are not
+// equal to one another: it reads "these parts are equal to each other" and
+// stops at the side it is on. Read as a figure-wide class it is false, and read
+// as an ANGLE mark it lands at the wrong vertices entirely.
+function sideMark(p, q, opts) {
+    var o = opts || {},
+        count = Math.max(0, Math.min(3, Math.round(o.marks || 0))),
+        c = midpoint(p, q),
+        a = dir(p, q),
+        half = o.size || (count ? 0.16 : 0.17 * TYPE),
+        across = a + Math.PI / 2,
+        runs = [], i, base;
+
+    if (count) {
+        for (i = 0; i < count; i++) {
+            base = polar(c, (i - (count - 1) / 2) * half * 1.3, a);
+            runs.push([polar(base, -half, across), polar(base, half, across)]);
+        }
+        return strokeSet(runs);
+    }
+    if (o.glyph === 'cross') {
+        return strokeSet([
+            [polar(c, -half, a + Math.PI / 4), polar(c, half, a + Math.PI / 4)],
+            [polar(c, -half, a - Math.PI / 4), polar(c, half, a - Math.PI / 4)]
+        ]);
+    }
     return board.create('curve', [
-        function (t) { return c[0] + rr * Math.cos(t); },
-        function (t) { return c[1] + rr * Math.sin(t); },
+        function (t) { return c[0] + half * Math.cos(t); },
+        function (t) { return c[1] + half * Math.sin(t); },
         0, 2 * Math.PI
-    ], {
-        strokeColor: 'black', strokeWidth: 1.2, fixed: true, highlight: false,
-        fillColor: filled ? 'black' : 'white', fillOpacity: 1
-    });
+    ], { strokeColor: 'black', strokeWidth: 1.2, fixed: true, highlight: false });
 }
 
 // None of JSXGraph's seven built-in arrow heads is an open V of straight
@@ -292,18 +309,10 @@ function hatch(region, spacing, angleDeg) {
 }
 
 // Equal-length marks: n ticks across the midpoint, one tick count per
-// equivalence class. Sized in board units like the type, so the ticks keep
-// their proportion to the figure whatever canvas it renders at.
+// equivalence class. Kept as its own name because every figure before 例題37
+// calls it; the geometry lives in sideMark.
 function ticks(p, q, n, size) {
-    var a = dir(p, q), half = size || 0.16,
-        along = a, across = a + Math.PI / 2,
-        centre = midpoint(p, q),
-        runs = [], i, base;
-    for (i = 0; i < n; i++) {
-        base = polar(centre, (i - (n - 1) / 2) * half * 1.3, along);
-        runs.push([polar(base, -half, across), polar(base, half, across)]);
-    }
-    return strokeSet(runs);
+    return sideMark(p, q, { marks: n, size: size || 0.16 });
 }
 
 // The right angle is a corner square, not an arc -- an arc at 90 degrees is
@@ -469,8 +478,8 @@ seg(E, D, HEAVY);
 seg(D, B, HEAVY);
 seg(F, G, HEAVY);
 
-equalLength(B, F, false);
-equalLength(F, E, false);
+sideMark(B, F, { glyph: 'circle' });
+sideMark(F, E, { glyph: 'circle' });
 
 braceOn(E, D, '<i>x</i>', 0.42, 1);
 braceOn(F, G, '6', 0.42, 1);

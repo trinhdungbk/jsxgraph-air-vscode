@@ -1185,3 +1185,35 @@ The two ☆ margin notes — 中点連結定理 (two mini-triangles, ○ marks o
 mini-diagrams inside it, needing a text-block primitive none of these figures
 use. The diagrams alone would draw in minutes; the prose around them is the part
 that has no primitive.
+
+## Side notation went into the dimension element
+
+The ○ marks of 例題37 were a local helper (`equalLength`) for one turn. They are
+now the element's third form, in ai-tutor's `js/dimension.js`: the same element
+as a length and a ratio unit, with no value at all —
+`{marks: 1|2|3}` for ticks, `{glyph: 'circle'|'cross'}` for a glyph on the line.
+`_lib.js` follows the same vocabulary through `sideMark(p, q, opts)`, and
+`ticks()` is now a wrapper over it, so a reference figure reads like the call
+that draws it on the other side.
+
+It does not displace `hatch`, and the reason is worth keeping: **`hatch` takes a
+segment ELEMENT.** A mark on AE where the drawn segment is AB has nothing to
+attach to, and the way out — helper sub-segments created only to carry marks —
+is exactly the "one line drawn three times" defect the removed 例題37 figure
+shipped with. `dimension` takes the two endpoints. So: whole segment → `hatch`;
+part of a divided side, or the glyph form → `dimension`. Both routes now satisfy
+the equal-mark coverage gate, and a dimension carrying a VALUE still does not —
+a length is not an assertion that two things are equal.
+
+Checked by rendering, and by the emitted path: `marks` 1/2/3 give one, two and
+three two-point runs, `glyph: 'circle'` gives a 33-point ring, `'cross'` two
+runs, and a plain length still emits nothing at all because the number is the
+whole mark. The full 例題37(1) drawn through ai-tutor's scaffold with every side
+mark as a dimension came out the same figure as the hand-built 28, and the
+element's own auto rule got the lengths right unprompted: `x` plain because it
+is alone on ED, `6` and `y` braced because they share the line FC.
+
+One sizing trap: the glyph radius cannot be `tickLength`. That attribute is
+0.45 em, calibrated for the bar form's end ticks, and a circle of that radius
+is nearly as wide as a letter — it reads as a ring hung on the side instead of
+a mark on it. The glyph has its own 0.17 em (rule G13).

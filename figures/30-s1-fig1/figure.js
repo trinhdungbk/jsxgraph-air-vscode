@@ -38,10 +38,10 @@ seg(F, C, HEAVY);
 seg(C, A, HEAVY);
 seg(E, D, HEAVY);
 
-equalLength(A, E, false);
-equalLength(E, F, false);
-equalLength(A, D, false);
-equalLength(D, C, false);
+sideMark(A, E, { glyph: 'circle' });
+sideMark(E, F, { glyph: 'circle' });
+sideMark(A, D, { glyph: 'circle' });
+sideMark(D, C, { glyph: 'circle' });
 
 braceOn(E, D, '<i>x</i>', 0.42, 1);
 

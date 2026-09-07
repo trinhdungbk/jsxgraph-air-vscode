@@ -751,3 +751,113 @@ much better panel — or the offset cannot be read at 210px. The figure follows
 B9; nothing else in the panel is affected.
 
 No `reference/` crops, so `compare.py` skips 22–23.
+
+---
+
+# Porting the ratio unit into ai-tutor's `dimension` element
+
+`enclose: 'none' | 'circle' | 'box' | 'triangle'` added to the element at
+`ai-tutor/src/interfaces/module/figure_gen/js/dimension.js` (source of truth;
+`jsxgraph/extensions/dimension.js` re-synced from it), so the two marks of
+figure 23 — circled units along AD, boxed along DC — are one element each:
+
+```js
+board.create('dimension', [pA, pF], {name: '2', enclose: 'circle'});
+board.create('dimension', [pD, pE], {name: '2', enclose: 'box'});
+```
+
+ai-tutor has no renderer, so the element was checked the only way it can be:
+assembled into a page with `jsxgraphcore.js` from the CDN and shot headless the
+way `figures/render.py` shoots this repo's figures, counting the runs between
+the mark path's NaN breaks so each shape could be verified rather than
+eyeballed. Twelve cases: three enclosures × one and two digits, a forced
+`style:'plain'`, a caller-supplied `bulge: 0.9`, a 1.1-unit span, and the three
+bare-length forms as a regression check.
+
+## Two defects the render caught, one of them old
+
+**The white plate ate the box.** A boxed unit came out as `[2]` — the middle of
+the top and bottom edges missing. The label's knock-out plate is its line box,
+~1.15 em tall, and a 四角数字 is 0.88 em square, so the plate overhangs and
+covers those edges. Enlarging the box to fit the plate would give the unit the
+wrong proportions and filling the shape is not available (the style layer caps
+fillOpacity), so an enclosed unit now takes no plate at all. Rule G7.
+
+**`style: 'bar'` has never drawn its end ticks.** Not my change: the element
+reads `attr.tickLength`, and `JXG.copyAttributes` returns every key lower-cased,
+so it has always been `undefined` → `state.tick` NaN → all four tick coordinates
+non-finite → a path that breaks there. The bar rendered as a bare line and
+nothing complained. Fixed to `attr.ticklength`; rule G6 now says any attribute
+this element reads is named in lower case. `enclose` is lower case by luck —
+`encloseWith` would have failed exactly the same way.
+
+## What the element decides that the prompt cannot
+
+- an enclosed unit resolves `style: 'auto'` to `'arc'`, alone on its side or not;
+- unless the span cannot hold it (gap > 0.75 of the chord), where it falls back
+  to the bare glyph, which is what the page does there;
+- the arc's sagitta is floored at the plain form's own clearance and capped at
+  0.3 of the chord (B11), so neither a flat mark nor a balloon is reachable;
+- the triangle needs a circumradius 1.5× the box's for the same digit, because
+  an upward triangle wastes its lower corners and digits like 9 have descenders.
+
+A bare length keeps its old unfloored depth, so no figure drawn before this
+changes: all 23 figures here re-render byte-identical.
+
+## Not done: nothing generated will use it yet
+
+`prompts/geometry_2d_dimension.py:24` still tells the generator
+「Only a LENGTH along a straight segment is a 'dimension'. A radius, a diameter,
+an arc length, an area, **a ratio**, or a caption owning no element keeps its
+plain anchored text」, and `validation/code_dimension.py:46` says the same in
+`_LENGTH_ANNOTATION_TYPES`. So a ratio annotation is still told to become a
+hand-placed `text`, and `enclose` is unreachable from generation — G3's failure
+exactly: the switch works and nothing throws it. The validator is count-based
+rather than attribute-allowlisted, so it needs no change to ACCEPT `enclose`;
+what it needs is for a ratio to count as an annotation a dimension is drawn for.
+That edit changes what every generated figure does with every ratio, so it was
+left for its own decision — and then asked for, so it is done: see below.
+
+## Wiring it up: prompt, gate, knowledge base
+
+`enclose` reached the generator in three edits, all in ai-tutor:
+
+- `prompts/geometry_2d_dimension.py` — a ratio unit is now a `dimension`, with
+  three added rules: one shape per unit system (circle → box → triangle in the
+  order the spec states them, the same shape for every part of a system wherever
+  it appears), the digit in `name` and the shape in `enclose`, and no placement
+  for a ratio either. The heading is now「Length and ratio annotations」.
+- `validation/code_dimension.py` — a ratio counts as an annotation a dimension
+  is owed, plus two new checks.
+- `jsxgraph_kb.py` — `enclose` in the `dimension` entry's attributes, the ratio
+  in its description, and the two-system example from figure 23.
+
+227 unit tests pass, including 7 new ones.
+
+### Three things that went wrong wiring it
+
+**The KB addition never reached the prompt.** The formatter truncates a
+description at 400 characters and emits only the FIRST example. The ratio
+sentence was appended to a description already sitting at the cap, and the ratio
+example was added as a second one: both were dropped in silence, the dict read
+correctly, and `enclose` arrived at the generator as a bare attribute name with
+no example of use. `retrieve_context(['ratio'])` — rendering the prompt the model
+actually sees — found it in one call. Rule G11. The same check shows
+`anglemark`'s 721-character description losing its last third today, which is
+untouched and worth a look.
+
+**Widening the shared annotation set would have hit the 3D gate.**
+`_length_annotations` feeds both the 2D dimension gate and the 3D
+dimension-arc gate. Adding "ratio" to it demands a `dim_`-prefixed `curve3d`
+for every ratio in every 3D figure — a mark the 3D recipe cannot draw, having no
+enclosure. So: `_RATIO_ANNOTATION_TYPES` as its own set, `_annotations_of(spec,
+types)` as the reader, and the 3D gate still reads lengths only. There is now a
+test asserting a ratio in a 3D spec demands nothing (rule G10).
+
+**Some rules belong in the gate, not the element.** G1 sends placement to the
+element because the model cannot see the finished figure. The complement is that
+a rule about how the value is SPELLED is right there in the emitted source:
+`{name: '②'}` — a glyph that already carries its enclosure — is now caught by a
+regex over the enclosed-alphanumerics ranges, and the count of dimensions naming
+a unit system is checked against the spec's ratio count. Neither needs the
+figure. Rule G9.

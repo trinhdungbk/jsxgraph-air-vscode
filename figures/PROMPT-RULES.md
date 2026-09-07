@@ -332,6 +332,69 @@ update:
 | the staggered brace of a pair is chosen by chord length, not by drawing order | B9, B11 |
 | the label pass runs after every mark has claimed its wedge | B4 |
 
+**G6. An attribute the element reads must be named in LOWER CASE.**
+`JXG.copyAttributes` returns every key lower-cased, so `attr.tickLength` comes
+back `undefined` however the Options block spells it, `undefined * height` is
+NaN, and a path breaks at a non-finite coordinate — so the bar form had been
+rendering as a bare bar with no end ticks since it was written, silently. Read
+`attr.ticklength`. This is the fourth member of the same family as a clipped
+label, a missing Unicode enclosure, `Composition.add`'s arity and the
+`initBoard` options deep-copy: nothing throws, an element is still on the board,
+and part of the mark is simply not there.
+
+**G7. A knock-out plate cannot live inside a drawn enclosure.** The plate is the
+glyph's line box, about 1.15 em tall; a 四角数字 is 0.88 em square. A plate
+sized to the text therefore overhangs the box it sits in and erases the middle
+of its top and bottom edges — the mark reads as `[2]`. Enlarging the box to
+swallow the plate gives the unit the wrong proportions, and filling the shape
+instead is not available (G2: the style layer caps every fill). So an enclosed
+unit takes no plate, and its interior is simply not knocked out — which is also
+true of the circle and the triangle, so at least it is consistent.
+
+**G8. An enclosed unit is always braced, and a span too short to hold one falls
+back to a bare glyph.** A bare *length* can be set plain because the number is
+its own measurement; a bare *ratio unit* cannot, because a glyph beside a
+segment reads as a caption on nothing — what says "this stretch is 2 units" is
+the brace. But the enclosure is wide, and on a short sub-segment the gap the
+SHAPE needs eats the chord and leaves two 2px stubs under a circle. The page
+does the same thing there and sets the unit bare, so the element falls back
+rather than draw a cup. Both decisions need the finished figure, so both belong
+here and not in the prompt.
+The same width is why the arc's depth needs a FLOOR as well as B11's cap for an
+enclosed unit: a sagitta given as a fraction of the span drops a whole circled
+digit within a hair of the segment it measures. The floor is the clearance the
+plain form already keeps — *an arc may never sit closer to its segment than a
+bare number would.*
+
+**G9. A rule the model can get wrong in the CODE belongs in the validator, not
+in the element.** G1 sends placement rules to the element because the model
+cannot see the finished figure. The complement: a rule about how the value is
+SPELLED is visible in the emitted source, so it is statically checkable and
+belongs in the gate. `{name: '②'}` is the case — a pre-composed circled digit
+gets a second circle drawn around it, and the boxed and triangled forms are not
+characters at all. Told once in the prompt, it will still be emitted; a regex
+over the enclosed-alphanumerics ranges catches it every time.
+Same split for the count: the gate cannot match one element to one annotation
+(variable names are the generator's choice), but it can require that as many
+dimensions name a unit system as the spec has ratio units.
+
+**G10. A shared vocabulary feeding two gates is never widened in place.**
+`_length_annotations` fed the 2D dimension gate AND the 3D dimension-arc gate.
+Adding the ratio spellings to it would have silently started demanding a
+`curve3d` for every ratio in every 3D figure — a mark the 3D recipe cannot draw,
+since it has no enclosure. Two sets and one parameterised reader; the 3D gate
+keeps the length set alone.
+
+**G11. Verify a prompt or KB addition by rendering the prompt the model will
+see, not by reading the file you edited.** ai-tutor's KB formatter truncates an
+element's description at 400 characters and emits only the FIRST example
+(`break  # one example per element keeps the context prompt-sized`). The first
+attempt at the ratio entry appended a sentence to a description already at the
+cap and added the ratio example second: both were silently dropped, the dict
+looked right, and `enclose` reached the generator as a bare attribute name with
+no example. One `retrieve_context(['ratio'])` call found it. The same check
+shows `anglemark`'s 721-character description losing its last third today.
+
 **G3. "Emitted only when the spec calls for it" must be asserted at the
 production call site, not only in a test that passes the flag by hand.** The
 `dimension` element shipped with `dimensions=True` in its unit tests and

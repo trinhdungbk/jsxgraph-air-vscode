@@ -521,13 +521,23 @@ at F" written into 例題35(1) measured 115°, because the perpendicular belongs
 例題36(1) and had been carried across by memory. A test set is a reading of the
 source too, and rule F2 applies to it.
 
+**E10. A mark whose correctness is invisible must expose its decision.** The
+audit cannot read a design choice off pixels: whether a ratio unit's shape is a
+circle or a box, which side a brace chose, whether a value was braced or set
+plain. `dimension` exposes `Enclose()`, `Style()` and `Side()`, `anglemark`
+exposes `Value()`. Observability is a design requirement for these elements, not
+an afterthought — without it the only checkable thing is that *some* element
+exists, which is what the code gates already do.
+
 **E9. Audit in the frame the host will give the figure, never a fixed one.**
 `board.figureAspectRatio` is stamped for the host to shape its container BEFORE
 the auto-fit runs; a fixed frame of another aspect makes the fit clip both ends
 and every label there reports as cut off. A width floor must grow the height,
-not clamp the width. Confirm any residual clipping with a control render that
-removes the element under test — identical clipping means the frame, not the
-element.
+not clamp the width — and size the frame by its **diagonal**, not by one side:
+the style layer sets type as a fraction of the diagonal, so a fixed height made
+a 4.25 figure ask for a 103px font and the auto-fit never converged. Confirm any
+residual clipping with a control render that removes the element under test —
+identical clipping means the frame, not the element.
 
 1. Every marked angle sweeps < 180° (catches A1).
 2. Every stated measure holds numerically on the finished coordinates (A2/A3).

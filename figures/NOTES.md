@@ -968,3 +968,58 @@ measured off the 例題36 page rather than off their own panels. A6/A8 want the
 panel's own measurement. Saving the page image anywhere on disk closes it: crop
 to `figures/reference/q1-parallelogram-cevians.png` and
 `q2-parallelogram-cross.png` and the sheets appear with no other change.
+
+---
+
+# Ratio-unit enclosures, and what evaluating them found
+
+`dimension` gained `enclose: 'none' | 'circle' | 'box' | 'triangle'` for 比の合成,
+where two ratios live in different unit systems until they are scaled onto a
+common one, and the systems are told apart by the shape around the digit and by
+nothing else. Strip the enclosures off such a figure and it reads "2:1 and 2:1"
+where the two 2s are not the same length — so the shape is part of the value.
+
+The three shapes are **stroked, never typeset**, and the reason is the same
+silent-invisibility class as a clipped label: U+20DE and U+20E4 (the combining
+enclosing square and triangle) are absent from these serif faces and render as
+**nothing at all**, with no error and no missing object. U+2460 (①) does exist,
+but only for 1–20.
+
+## Updating the evaluation for it
+
+1. `dimension.js` now exposes `Enclose()`, `Style()` and `Side()` — read-only
+   getters, added purely so the decisions are observable from outside. An audit
+   cannot infer a design decision from pixels, which makes observability a
+   design requirement for anything whose correctness is invisible.
+2. The audit records `enclose`, `style`, `side` and the mark's sub-path count
+   per dimension, and `expected_notation` gained
+   `ratio_units: [{value, enclose}, …]`.
+3. Sub-path counting is what makes "the circle was requested but never stroked"
+   measurable: a braced value is 2 runs, a braced value inside a shape is 3.
+
+## The defect it found
+
+All four ratio units on the composition figure arrived correct — right shape,
+braced, stroked. But **both unit systems braced to the same side of the base**,
+so the ③/⑦ pair crosses the [2]/[1] pair in an X. `collinearGroup` picks a side
+per LINE, which is right for sub-segments of one system and wrong when two
+systems share a base: the page puts one above the line and the other below.
+Reported, not fixed — it is a design change to the element.
+
+The audit only caught it because `Side()` is exposed. It still does **not**
+detect crossing *paths*, only overlapping label boxes, and here the labels were
+far apart. That blind spot is open.
+
+## A frame model bug this exposed
+
+The ratio figure is 4.25 wide-to-tall. `frame_for` held the HEIGHT fixed and let
+the width follow the aspect, giving 2380×560 — and the style layer sets type as
+a fraction of the canvas DIAGONAL, so it asked for a **103px font** and the
+auto-fit could not converge. Every label reported as clipped by hundreds of
+pixels. Sizing the frame by its diagonal instead gives every aspect the same
+type size, and dropped the clips across the whole reference set from hundreds of
+pixels to 5–38px. See PROMPT-RULES E9.
+
+**The whole evaluation method is now written up in Confluence**, in the folder
+`~6177ab07f6da6a006af80a69/folder/2840756370`: *Figure Evaluation: Method and
+Layers*, *The Rendered-DOM Audit*, *Extension Evaluation: Results and Lessons*.

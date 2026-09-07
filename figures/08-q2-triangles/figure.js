@@ -1,9 +1,9 @@
-// @size 700 430
+// @size 700 477
 // 例題35 (2) 問題 -- equilateral ABC and equilateral DCE standing on one line
 // through B, C, E; P is where BD crosses AE. Find angle BPE.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 4.5, 8.0, -1.0],
+    boundingbox: [-0.88, 4.78, 8.05, -1.31],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

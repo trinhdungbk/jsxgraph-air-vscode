@@ -55,6 +55,54 @@ function at(p, r, a, s, size) {
     return text(q[0], q[1], s, 'middle', 'middle', size);
 }
 
+// The bisector of the widest gap between the arms meeting at a vertex -- rule
+// B4, computed instead of typed. A hardcoded angle is correct for exactly one
+// set of proportions and goes silently stale the moment the shape changes: it
+// still points somewhere plausible, so nothing looks broken and the letter
+// drifts onto a stroke.
+//
+// At a CROSSING the widest gap is always tied, because vertical angles are
+// equal by construction -- so which side the letter takes would be decided by
+// floating-point noise in the sort. `prefer` breaks that tie deliberately: of
+// the gaps within a hair of the widest, the one whose bisector is nearest
+// `prefer` wins. `rank` passes over that many wider gaps, for the vertex whose
+// widest gaps are already taken by marks: a mark cannot move and a letter can.
+function gapBisector(arms, rank, prefer) {
+    var turn = 2 * Math.PI,
+        a = arms.map(function (t) { return ((t % turn) + turn) % turn; })
+                .sort(function (p, q) { return p - q; }),
+        gaps = [], i, lo, hi;
+    for (i = 0; i < a.length; i++) {
+        lo = a[i];
+        hi = i + 1 < a.length ? a[i + 1] : a[0] + turn;
+        gaps.push([hi - lo, (lo + (hi - lo) / 2) % turn]);
+    }
+    if (prefer !== undefined && prefer !== null) {
+        // Signed angular distance to `prefer`, folded into [0, pi].
+        gaps.forEach(function (g) {
+            var d = Math.abs(((g[1] - prefer) % turn + turn) % turn);
+            g.push(Math.min(d, turn - d));
+        });
+        // Widest first, and among gaps of practically equal width the one
+        // pointing nearest `prefer`. 1e-6 rad is far below anything visible and
+        // far above the noise two vertical angles differ by.
+        gaps.sort(function (p, q) {
+            return Math.abs(q[0] - p[0]) > 1e-6 ? q[0] - p[0] : p[2] - q[2];
+        });
+    } else {
+        gaps.sort(function (p, q) {
+            return Math.abs(q[0] - p[0]) > 1e-6 ? q[0] - p[0] : p[1] - q[1];
+        });
+    }
+    return gaps[Math.min(rank || 0, gaps.length - 1)][1];
+}
+
+// A vertex letter, placed from the arms that meet there rather than from an
+// angle. `arms` are the directions of every stroke leaving v, marks included.
+function labelAt(v, r, arms, str, rank, prefer, size) {
+    return at(v, r, gapBisector(arms, rank, prefer), str, size);
+}
+
 function seg(p, q, style) { return board.create('segment', [p, q], style || INK); }
 
 function path(pts, style) {
@@ -128,7 +176,15 @@ function solidHead(tip, a, scale) {
 // Circled step numbers. They carry no arc of their own: the book drops the
 // bare glyph into the wedge, and an arc would collide with the 108 marks that
 // already sit at the same vertices.
-var CIRCLED = ['&#9312;', '&#9313;', '&#9314;', '&#9315;', '&#9316;', '&#9317;'];
+// U+2460..U+2473. Composing ratios runs the unit count well past ⑥ -- the
+// segment diagram for AG:GH:HC needs ⑦ -- and CIRCLED[n] for an n the array
+// does not reach yields `undefined`, which JSXGraph prints as the word.
+var CIRCLED = [
+    '&#9312;', '&#9313;', '&#9314;', '&#9315;', '&#9316;',
+    '&#9317;', '&#9318;', '&#9319;', '&#9320;', '&#9321;',
+    '&#9322;', '&#9323;', '&#9324;', '&#9325;', '&#9326;',
+    '&#9327;', '&#9328;', '&#9329;', '&#9330;', '&#9331;'
+];
 function step(v, dist, from, to, n, size) {
     return at(v, dist, (from + sweep(from, to)) / 2, CIRCLED[n - 1], size);
 }
@@ -352,7 +408,7 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 437
+// @size 700 389
 // 解説36 (2) -- AF and BC produced to meet at P (角出し), which is what puts
 // DG:GE inside a pair of similar triangles:
 //   triangle FCP ~ FDA  gives  CP:AD = CF:FD = 2:3, so CP = [3] x 2/3 = [2]
@@ -362,12 +418,16 @@ function bulgeArc(p, q, h, s) {
 // where the page draws it.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 6.15, 11.15, -1.40],
+    boundingbox: [-0.95, 5.18, 11.02, -1.47],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BASE = 6, RISE = 4.9, LEAN = 0.7;
+// Measured off the source page as a FILE, not eyeballed off an image pasted
+// into a chat: base 143px, rise 0.66 of the base, top side shifted right 0.15
+// of it, and both panels of the page agree to within a pixel. The eyeball
+// estimate had the rise 24% too tall and put the two panels at different leans.
+var BASE = 6, RISE = 3.96, LEAN = 0.90;
 
 var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
@@ -385,7 +445,6 @@ seg(D, E);
 seg(F, P, DOTTED);
 seg(C, P, DOTTED);
 
-var OUT = dir(D, C) + Math.PI / 2;
 
 dimension(A, D, '3', 0.55, 1, 'box');
 dimension(A, B, CIRCLED[4], 0.50, -1);
@@ -394,14 +453,13 @@ dimension(E, C, '2', 0.80, -1, 'box');
 dimension(D, F, CIRCLED[2], 0.42, 1);
 dimension(F, C, CIRCLED[1], 0.78, 1);
 
-at(A, 0.55, rad(130.9), 'A');
-at(B, 0.55, rad(220.9), 'B');
-// C now carries four arms -- CB, CD and the dotted CP leaving along the base,
-// plus nothing below it -- so the letter drops straight into the gap under the
-// produced base rather than sitting on it.
-at(C, 0.55, rad(285), 'C');
-at(D, 0.55, rad(40.9), 'D');
-at(E, 0.52, rad(270), 'E');
-at(F, 0.62, OUT, 'F');
-at(G, 0.50, rad(99.2), 'G');
-at(P, 0.55, rad(346.1), 'P');
+labelAt(A, 0.55, [dir(A, B), dir(A, D), dir(A, F)], 'A');
+labelAt(B, 0.55, [dir(B, A), dir(B, C)], 'B');
+// C carries three arms along the produced base and the side, so the letter
+// drops into the gap below rather than sitting on the base.
+labelAt(C, 0.55, [dir(C, B), dir(C, D), dir(C, P)], 'C');
+labelAt(D, 0.55, [dir(D, A), dir(D, C), dir(D, E)], 'D');
+labelAt(E, 0.52, [dir(E, B), dir(E, C), dir(E, D)], 'E');
+labelAt(F, 0.62, [dir(F, D), dir(F, C), dir(F, A), dir(F, P)], 'F');
+labelAt(G, 0.50, [dir(G, A), dir(G, F), dir(G, D), dir(G, E)], 'G', 0, rad(213));
+labelAt(P, 0.55, [dir(P, C), dir(P, F)], 'P');

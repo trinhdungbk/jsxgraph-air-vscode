@@ -1,4 +1,4 @@
-// @size 700 369
+// @size 700 360
 // 解説36 (1) 線分図 -- BD carrying both ratios at once, which is the whole method:
 //   [1]:[2] on B-P-D, times 4  ->  <4>:<8>
 //   (3):(1) on B-Q-D, times 3  ->  <9>:<3>
@@ -6,7 +6,7 @@
 // one line: BP:PQ:QD = 4 : (9-4) : 3.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.55, 3.45, 12.55, -3.45],
+    boundingbox: [-0.52, 3.46, 12.53, -3.24],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

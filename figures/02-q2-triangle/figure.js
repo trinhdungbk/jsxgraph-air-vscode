@@ -1,9 +1,9 @@
-// @size 613 470
+// @size 700 558
 // 例題34 (2) 問題 -- angle A = 66, angles B and C each cut into three equal
 // parts (same mark = same size), find x = angle BDC.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.4, 8.8, 11.4, -1.1],
+    boundingbox: [-1.06, 8.88, 11.06, -0.78],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

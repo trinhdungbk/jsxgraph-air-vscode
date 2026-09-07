@@ -1,9 +1,9 @@
-// @size 363 780
+// @size 328 700
 // 例題35 (1) 問題 -- square ABCD, E on ray CD produced, F where the diagonal
 // AC meets BE. Find angle FED.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.0, 10.6, 4.4, -1.0],
+    boundingbox: [-1.08, 10.67, 4.48, -1.18],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

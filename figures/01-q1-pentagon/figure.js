@@ -1,8 +1,8 @@
-// @size 640 450
+// @size 700 531
 // 例題34 (1) 問題 -- regular pentagon ABCDE wedged between l // m, find angle x.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-5.3, 7.4, 6.8, -1.1],
+    boundingbox: [-5.16, 7.31, 6.21, -1.31],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

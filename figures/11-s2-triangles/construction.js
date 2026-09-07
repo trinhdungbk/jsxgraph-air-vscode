@@ -55,6 +55,54 @@ function at(p, r, a, s, size) {
     return text(q[0], q[1], s, 'middle', 'middle', size);
 }
 
+// The bisector of the widest gap between the arms meeting at a vertex -- rule
+// B4, computed instead of typed. A hardcoded angle is correct for exactly one
+// set of proportions and goes silently stale the moment the shape changes: it
+// still points somewhere plausible, so nothing looks broken and the letter
+// drifts onto a stroke.
+//
+// At a CROSSING the widest gap is always tied, because vertical angles are
+// equal by construction -- so which side the letter takes would be decided by
+// floating-point noise in the sort. `prefer` breaks that tie deliberately: of
+// the gaps within a hair of the widest, the one whose bisector is nearest
+// `prefer` wins. `rank` passes over that many wider gaps, for the vertex whose
+// widest gaps are already taken by marks: a mark cannot move and a letter can.
+function gapBisector(arms, rank, prefer) {
+    var turn = 2 * Math.PI,
+        a = arms.map(function (t) { return ((t % turn) + turn) % turn; })
+                .sort(function (p, q) { return p - q; }),
+        gaps = [], i, lo, hi;
+    for (i = 0; i < a.length; i++) {
+        lo = a[i];
+        hi = i + 1 < a.length ? a[i + 1] : a[0] + turn;
+        gaps.push([hi - lo, (lo + (hi - lo) / 2) % turn]);
+    }
+    if (prefer !== undefined && prefer !== null) {
+        // Signed angular distance to `prefer`, folded into [0, pi].
+        gaps.forEach(function (g) {
+            var d = Math.abs(((g[1] - prefer) % turn + turn) % turn);
+            g.push(Math.min(d, turn - d));
+        });
+        // Widest first, and among gaps of practically equal width the one
+        // pointing nearest `prefer`. 1e-6 rad is far below anything visible and
+        // far above the noise two vertical angles differ by.
+        gaps.sort(function (p, q) {
+            return Math.abs(q[0] - p[0]) > 1e-6 ? q[0] - p[0] : p[2] - q[2];
+        });
+    } else {
+        gaps.sort(function (p, q) {
+            return Math.abs(q[0] - p[0]) > 1e-6 ? q[0] - p[0] : p[1] - q[1];
+        });
+    }
+    return gaps[Math.min(rank || 0, gaps.length - 1)][1];
+}
+
+// A vertex letter, placed from the arms that meet there rather than from an
+// angle. `arms` are the directions of every stroke leaving v, marks included.
+function labelAt(v, r, arms, str, rank, prefer, size) {
+    return at(v, r, gapBisector(arms, rank, prefer), str, size);
+}
+
 function seg(p, q, style) { return board.create('segment', [p, q], style || INK); }
 
 function path(pts, style) {
@@ -128,7 +176,15 @@ function solidHead(tip, a, scale) {
 // Circled step numbers. They carry no arc of their own: the book drops the
 // bare glyph into the wedge, and an arc would collide with the 108 marks that
 // already sit at the same vertices.
-var CIRCLED = ['&#9312;', '&#9313;', '&#9314;', '&#9315;', '&#9316;', '&#9317;'];
+// U+2460..U+2473. Composing ratios runs the unit count well past ⑥ -- the
+// segment diagram for AG:GH:HC needs ⑦ -- and CIRCLED[n] for an n the array
+// does not reach yields `undefined`, which JSXGraph prints as the word.
+var CIRCLED = [
+    '&#9312;', '&#9313;', '&#9314;', '&#9315;', '&#9316;',
+    '&#9317;', '&#9318;', '&#9319;', '&#9320;', '&#9321;',
+    '&#9322;', '&#9323;', '&#9324;', '&#9325;', '&#9326;',
+    '&#9327;', '&#9328;', '&#9329;', '&#9330;', '&#9331;'
+];
 function step(v, dist, from, to, n, size) {
     return at(v, dist, (from + sweep(from, to)) / 2, CIRCLED[n - 1], size);
 }
@@ -352,14 +408,14 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 430
+// @size 700 477
 // 解説35 (2) -- triangles BCD and ACE are congruent (BC = AC, CD = CE, and the
 // included angle is 60 + 60 at C), so the marked angles pair off. The exterior
 // angle of triangle DBC at C is 60, hence dot + ring = 60; the same theorem on
 // triangle PBE makes angle APB = 60, so angle BPE = 120.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 4.5, 8.0, -1.0],
+    boundingbox: [-0.88, 4.78, 8.05, -1.31],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

@@ -67,6 +67,27 @@ needs no crop: it is the one check that can settle a reading off an illegible
 panel.
 *Check: the answer is identical on at least three random admissible shapes.*
 
+**A8. Measure the source from a FILE. An image pasted into a conversation is
+evidence of topology and of nothing else.** The same page, eyeballed off the
+paste and then measured off the file:
+
+| | eyeballed | measured |
+|---|---|---|
+| rise / base, panel (1) | 0.82 | 0.664 |
+| rise / base, panel (2) | 0.71 | 0.660 |
+| lean / base, panel (1) | 0.12 | 0.154 |
+| lean / base, panel (2) | 0.32 | 0.142 |
+
+Every number is wrong, the rise by a quarter — and the eyeball made two panels
+that are identical to within a pixel look like different shapes, which then got
+written into the figures as a deliberate difference and into the notes as a
+finding. Measuring is one pass: threshold the file, take the rows carrying a
+long dark run, and the two parallel sides fall out with their x-extents.
+A6 still holds — the scan owns what the givens leave free — but only a scan you
+can measure. Ask for the file.
+*Check: the shape constants trace to pixel measurements, not to a description of
+the picture.*
+
 ---
 
 ## B. Marks and their placement
@@ -105,6 +126,22 @@ outward normal — the degenerate case the rule handles correctly, and the case
 where the letter and a brace label both want "straight up". They coexist at
 different radii, the letter inside (B8's two-radii argument, applied to a label
 against a mark rather than two marks).
+
+**Compute the angle, never type it.** `labelAt(v, r, arms, str)` puts the letter
+on the bisector of the widest gap between the arms at v. A typed angle is
+correct for exactly one set of proportions and goes silently stale the moment
+the shape changes: it still points somewhere plausible, so nothing looks broken
+and the letter has drifted onto a stroke. Nine figures carried typed bisectors
+until the shape was corrected, and every one of them was then wrong.
+
+**The widest-gap rule is DEGENERATE at a crossing, and the tie has to be broken
+deliberately.** Vertical angles are equal by construction, so a point where two
+lines cross has its widest gap tied — twice over — and which side the letter
+takes is then decided by floating-point noise in the sort. Nothing errors, the
+figure looks finished, and the letter can flip to the other side of the crossing
+on any edit that perturbs the arithmetic. Pass the side the source uses and let
+the helper pick the tied-widest gap nearest it: same side as the book, with the
+clearance the wide gap gives.
 
 **Count the marks too, and place them first.** A mark and a label want the same
 seat, and the mark is the one that cannot move: an equal-angle mark belongs on
@@ -506,6 +543,18 @@ element.
    three random admissible shapes and compare (A7). This is the only check in
    the list that validates the *reading* rather than the drawing, and it is the
    cheapest one here.
+9. The frame is computed from what the figure DRAWS, by a tool, not by the
+   author (`refit.py`). It renders the figure, unions the SVG's bbox with every
+   label's client rect, maps that back through the board transform and rewrites
+   `boundingbox` and `@size` with half a letter height of margin. Hand
+   arithmetic over rendered HTML boxes is what left three figures loose and four
+   with a clipped letter — and one change of proportions invalidates every
+   hand-computed frame in the set at once. Run it TWICE: the first pass measures
+   inside the old frame, so whatever the old frame clipped is measured short.
+10. A compare sheet against the original, at matched height, for every figure
+    that has a source panel (`compare.py`). It is the only check that catches a
+    wrong SHAPE: a render alone looked right for two sessions with its rise a
+    quarter too tall.
 
 Check 5 deserves emphasis: JSXGraph renders text as absolutely-positioned HTML.
 A label placed outside the board is simply clipped — the object exists, the

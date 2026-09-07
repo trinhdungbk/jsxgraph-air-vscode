@@ -1,11 +1,11 @@
-// @size 700 430
+// @size 700 477
 // 解説35 (2) -- triangles BCD and ACE are congruent (BC = AC, CD = CE, and the
 // included angle is 60 + 60 at C), so the marked angles pair off. The exterior
 // angle of triangle DBC at C is 60, hence dot + ring = 60; the same theorem on
 // triangle PBE makes angle APB = 60, so angle BPE = 120.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 4.5, 8.0, -1.0],
+    boundingbox: [-0.88, 4.78, 8.05, -1.31],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

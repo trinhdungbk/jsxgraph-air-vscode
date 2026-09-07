@@ -1,4 +1,4 @@
-// @size 620 610
+// @size 681 700
 // 例題36 (1) 問題 -- square ABCD, E on diagonal BD produced with ∠DEC = 30°,
 // F the foot of the perpendicular from C to AE. Find ∠DCF.
 //
@@ -10,7 +10,7 @@
 // than place it plausibly.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.35, 9.55, 9.75, -1.35],
+    boundingbox: [-0.99, 9.27, 9.11, -1.12],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

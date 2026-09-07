@@ -1,17 +1,18 @@
-// @size 620 508
+// @size 700 495
 // 例題36 (1) 問題 -- parallelogram ABCD with E the midpoint of BC and F on DC
 // with DF:FC = 1:2. AE and AF cut the diagonal BD at P and Q. Find BP:PQ:QD.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 5.95, 7.65, -1.10],
+    boundingbox: [-0.95, 5.06, 7.86, -1.17],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-// The shape of the parallelogram is the one thing the question does not fix, so
-// it is the one thing taken from the scan: base 6, rise 0.82 of the base, top
-// side shifted right by 0.12 of it (measured on both panels of the page).
-var BASE = 6, RISE = 4.9, LEAN = 0.7;
+// Measured off the source page as a FILE, not eyeballed off the page in a
+// chat: base 143px, rise 0.66 of the base, top side shifted right 0.15 of it.
+// Both panels of the page agree to within a pixel. The eyeball estimate had the
+// rise 24% too tall and put the two panels at different leans.
+var BASE = 6, RISE = 3.96, LEAN = 0.90;
 
 var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
@@ -34,19 +35,19 @@ ticks(E, C, 2);
 
 // The DC partition is unequal, so the two braces stack (rule B9); an equal pair
 // would have to stay level, because level is what says they are equal.
-var OUT = dir(D, C) + Math.PI / 2;     // the outward normal of side DC
 dimension(D, F, CIRCLED[0], 0.42, 1);
 dimension(F, C, CIRCLED[1], 0.78, 1);
 
-// Every letter on the bisector of its widest gap, arms counted first (rule B4).
-at(A, 0.55, rad(130.9), 'A');
-at(B, 0.55, rad(220.9), 'B');
-at(C, 0.55, rad(310.9), 'C');
-at(D, 0.55, rad(40.9), 'D');
-at(E, 0.50, rad(270), 'E');
-// F sits between side DC and its own braces: the two arcs leave F along DC, so
-// the outward normal is the only clear direction, and 0.62 clears the nearer
-// arc by a third of a letter.
-at(F, 0.62, OUT, 'F');
-at(P, 0.50, rad(165.7), 'P');
-at(Q, 0.50, rad(100.2), 'Q');
+// Arms counted first, letter on the bisector of the widest gap they leave
+// (rule B4) -- computed from the arms rather than typed, so a change of
+// proportions carries the letters with it instead of stranding them.
+labelAt(A, 0.55, [dir(A, B), dir(A, D), dir(A, E), dir(A, F)], 'A');
+labelAt(B, 0.55, [dir(B, A), dir(B, C), dir(B, D)], 'B');
+labelAt(C, 0.55, [dir(C, B), dir(C, D)], 'C');
+labelAt(D, 0.55, [dir(D, A), dir(D, B), dir(D, C)], 'D');
+labelAt(E, 0.50, [dir(E, B), dir(E, C), dir(E, A)], 'E');
+// F's widest gap is the whole outward side, which is where its two braces are
+// too: the letter sits inside their apexes (rule B8's two radii).
+labelAt(F, 0.62, [dir(F, D), dir(F, C), dir(F, A)], 'F');
+labelAt(P, 0.50, [dir(P, B), dir(P, D), dir(P, A), dir(P, E)], 'P', 0, rad(151));
+labelAt(Q, 0.50, [dir(Q, B), dir(Q, D), dir(Q, A), dir(Q, F)], 'Q', 0, rad(191));

@@ -861,3 +861,110 @@ a rule about how the value is SPELLED is right there in the emitted source:
 regex over the enclosed-alphanumerics ranges, and the count of dimensions naming
 a unit system is checked against the spec's ratio count. Neither needs the
 figure. Rule G9.
+
+---
+
+# 問題 比の合成, 解説 (figures 24–27) — and what the compare sheets caught
+
+Figures 22–23 are the two 問題 panels (redrawn; they had been removed from the
+tree between sessions). 24–27 are the 解説, **reconstructed**: the pasted page
+carries the question panels and no worked solution, so these are built from the
+method rather than copied off a printed panel.
+
+| | |
+|---|---|
+| 24 | 解説(1) — every side in its own unit system: (3):(4) on AD, (7) on BC, [2] on AB, [1]:[1] on DC |
+| 25 | 解説(1) 線分図 — AC as (3):(7)×3 and [2]:[1]×10, both totalling <30> |
+| 26 | 解説(2) — AE and BC produced to Q (角出し), the circled system doubled |
+| 27 | 解説(2) 線分図 — AQ as (4):(9)×3 and [2]:[1]×13, both totalling <39> |
+
+Answers: AG:GH:HC = 9:11:10 and AG:GE = 12:14 = 6:7, every unit verified on the
+finished coordinates by replaying each figure's own code.
+
+## 1. The shape was wrong for two sessions, and only a compare sheet found it
+
+The page's own screenshot turned out to be on disk, so `reference/` finally got
+crops and `compare.py` produced sheets for 16 and 17. The first sheet showed the
+parallelogram visibly too tall — and measuring the FILE gave the numbers in rule
+A8: eyeballed off the paste, the rise was a quarter too big and one panel's lean
+was out by more than a factor of two. Worse, the eyeball had the two panels at
+*different* leans, so a difference that does not exist was written into two
+figures and into these notes as a finding.
+
+Both panels measure rise = 0.66 of the base and lean = 0.15, to within a pixel.
+Nine figures were rebuilt on that.
+
+Two things follow. **Ask for the file** — a paste is evidence of topology and
+nothing else. And **a render alone never shows this**: 16 and 17 had shipped
+looking fine, and the audit passed them, because nothing in the pipeline knew
+what shape they were supposed to be.
+
+## 2. Correcting the shape stranded every typed label angle
+
+All nine figures placed their letters with `at(v, r, rad(129.3), 'A')` — angles
+computed by hand for the old proportions. A typed bisector is right for exactly
+one shape, and when the shape moves it still points somewhere plausible: nothing
+looks broken, the letter has simply drifted toward a stroke.
+
+`_lib.js` gained `labelAt(v, r, arms, str, rank, prefer)`, which takes the
+directions of the arms meeting at the vertex and computes the bisector of their
+widest gap. The figures now read `labelAt(A, 0.55, [dir(A, B), dir(A, D),
+dir(A, C)], 'A')` — which also forces the arms to be enumerated, which is what
+rule B4 asked for in the first place.
+
+### The tie at a crossing is decided by float noise
+
+`gapBisector` was wrong on its first outing, and instructively: at P the four
+gaps are 88.08°, 91.92°, 88.08°, 91.92°, because **vertical angles are equal by
+construction**. The widest gap is always tied at any crossing, so the winner
+came out of floating-point noise in the sort, and P's letter landed on the
+opposite side from the book. `prefer` now breaks the tie with the side the
+source uses: of the gaps within 1e-6 rad of the widest, the one pointing nearest
+`prefer` wins.
+
+This is the sharp version of "computed beats typed": computing was right, and
+the degenerate case still had to be handled deliberately.
+
+### Where the book and the house rule differ
+
+The page seats a crossing letter in the NARROW wedge — the 43° one between QA
+and QB, the 65° one at G — tight enough that the letter touches both arms. We
+take the tied-widest gap on the same side instead: same reading, more clearance.
+
+## 3. The frame is a tool's job now
+
+Changing the proportions invalidated all nine hand-computed `boundingbox`
+values at once, which is the argument for `figures/refit.py`: render, union the
+SVG bbox with every label's client rect, map back through the board transform,
+rewrite `boundingbox` and `@size` with half a letter height of margin. Rule E9.
+
+It has to run twice. The first pass measures inside the OLD frame, so anything
+that frame clipped is measured short; the second converges. All 27 figures now
+pass the audit with no `WARN`.
+
+## 4. A rescaled unit system is a step, not an inconsistency
+
+解説(2) doubles the circled system — ②:① on AD becomes ④:② — because CQ comes
+out at half of AD and the figure would otherwise carry a fractional unit. The
+reader meets ② on AF in the question and ④ in the 解説. That IS 比の合成's core
+operation (the 線分図 does the same thing with ×3 and ×13), but the figure has to
+say which multiple it is drawn in, so the header does.
+
+## 5. Two-digit enclosed units need their own row spacing
+
+A triangled `21` has half again the circumradius of a `9` — the enclosure is
+sized from the glyph it holds — so the multiplier row placed for one digit is
+overprinted by a two-digit triangle's apex. The row depth comes from the widest
+value in the diagram, not per mark: a row that follows each glyph's own size
+stops being a row. And a segment diagram is flattened by lengthening the LINE,
+never by squeezing the rows — the stack's height is fixed in board units
+whatever the scale.
+
+## Still missing
+
+**A source file for THIS page.** 22–27 have no `reference/` crop, so
+`compare.py` skips them and the shape they are drawn to is the house proportion
+measured off the 例題36 page rather than off their own panels. A6/A8 want the
+panel's own measurement. Saving the page image anywhere on disk closes it: crop
+to `figures/reference/q1-parallelogram-cevians.png` and
+`q2-parallelogram-cross.png` and the sheets appear with no other change.

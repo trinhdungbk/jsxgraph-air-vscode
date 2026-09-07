@@ -1,10 +1,10 @@
-// @size 672 530
+// @size 700 566
 // 解説35 (3) -- drop the perpendicular GH from G onto EA produced. Triangles
 // ABC and AHG are congruent (AB = AH, angle B = angle H = 90, AC = AG), so
 // GH = CB = 7 and the hatched triangle is 4 x 7 / 2 = 14.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.0, 12.2, 16.0, -1.2],
+    boundingbox: [-0.99, 12.34, 15.97, -1.38],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

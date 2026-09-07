@@ -1,10 +1,10 @@
-// @size 613 470
+// @size 700 558
 // 解説34 (2) -- the question figure with the two unknowns named: every filled
 // mark is a, every open mark is b. D is labelled so the text can talk about
 // triangle DBC.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.4, 8.8, 11.4, -1.1],
+    boundingbox: [-1.06, 8.88, 11.06, -0.78],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

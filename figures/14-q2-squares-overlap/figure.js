@@ -1,9 +1,9 @@
-// @size 620 583
+// @size 700 692
 // 例題36 (2) 問題 -- square ABCD of side 10 and square EFGH of side 6, whose
 // CENTRE is the corner C of ABCD. Find the area of quadrilateral EPCQ.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-12.0, 11.0, 4.8, -4.8],
+    boundingbox: [-11.37, 11.05, 4.68, -4.81],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

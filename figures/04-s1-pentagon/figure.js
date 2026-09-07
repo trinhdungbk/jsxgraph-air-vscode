@@ -1,10 +1,10 @@
-// @size 640 460
+// @size 700 531
 // 解説34 (1) -- the question figure plus the one auxiliary line the solution
 // turns on: a parallel to l drawn through B. Steps 1-4 are the circled
 // numbers; alternate angles carry 3 = 4 and 1 = 2.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-5.3, 7.4, 6.8, -1.1],
+    boundingbox: [-5.16, 7.31, 6.21, -1.31],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

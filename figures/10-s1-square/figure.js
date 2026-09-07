@@ -1,10 +1,10 @@
-// @size 363 780
+// @size 329 700
 // 解説35 (1) -- the same figure with the two congruent triangles inked heavy.
 // 2 = 90 - 70 = 20 at D; triangles ABF and ADF are congruent about the
 // diagonal, so 1 = 2; and AB // EC makes angle FED the alternate angle of 1.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.0, 10.6, 4.4, -1.0],
+    boundingbox: [-1.09, 10.67, 4.48, -1.18],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

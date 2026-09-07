@@ -1,10 +1,10 @@
-// @size 663 445
+// @size 700 461
 // 例題36 (3) 問題 -- right isosceles triangle ABC (right angle at A, 45 at B),
 // D on BC with BD = 3 and DC = 6, and E the image of D when triangle ABD is
 // turned about A onto AC. Find the area of ABC, the length EC, the area of ADE.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-1.2, 5.9, 10.6, -2.0],
+    boundingbox: [-0.92, 5.67, 9.97, -1.52],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });

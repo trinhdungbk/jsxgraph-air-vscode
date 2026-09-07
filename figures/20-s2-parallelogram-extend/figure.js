@@ -1,4 +1,4 @@
-// @size 700 437
+// @size 700 389
 // 解説36 (2) -- AF and BC produced to meet at P (角出し), which is what puts
 // DG:GE inside a pair of similar triangles:
 //   triangle FCP ~ FDA  gives  CP:AD = CF:FD = 2:3, so CP = [3] x 2/3 = [2]
@@ -8,12 +8,16 @@
 // where the page draws it.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 6.15, 11.15, -1.40],
+    boundingbox: [-0.95, 5.18, 11.02, -1.47],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BASE = 6, RISE = 4.9, LEAN = 0.7;
+// Measured off the source page as a FILE, not eyeballed off an image pasted
+// into a chat: base 143px, rise 0.66 of the base, top side shifted right 0.15
+// of it, and both panels of the page agree to within a pixel. The eyeball
+// estimate had the rise 24% too tall and put the two panels at different leans.
+var BASE = 6, RISE = 3.96, LEAN = 0.90;
 
 var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
@@ -31,7 +35,6 @@ seg(D, E);
 seg(F, P, DOTTED);
 seg(C, P, DOTTED);
 
-var OUT = dir(D, C) + Math.PI / 2;
 
 dimension(A, D, '3', 0.55, 1, 'box');
 dimension(A, B, CIRCLED[4], 0.50, -1);
@@ -40,14 +43,13 @@ dimension(E, C, '2', 0.80, -1, 'box');
 dimension(D, F, CIRCLED[2], 0.42, 1);
 dimension(F, C, CIRCLED[1], 0.78, 1);
 
-at(A, 0.55, rad(130.9), 'A');
-at(B, 0.55, rad(220.9), 'B');
-// C now carries four arms -- CB, CD and the dotted CP leaving along the base,
-// plus nothing below it -- so the letter drops straight into the gap under the
-// produced base rather than sitting on it.
-at(C, 0.55, rad(285), 'C');
-at(D, 0.55, rad(40.9), 'D');
-at(E, 0.52, rad(270), 'E');
-at(F, 0.62, OUT, 'F');
-at(G, 0.50, rad(99.2), 'G');
-at(P, 0.55, rad(346.1), 'P');
+labelAt(A, 0.55, [dir(A, B), dir(A, D), dir(A, F)], 'A');
+labelAt(B, 0.55, [dir(B, A), dir(B, C)], 'B');
+// C carries three arms along the produced base and the side, so the letter
+// drops into the gap below rather than sitting on the base.
+labelAt(C, 0.55, [dir(C, B), dir(C, D), dir(C, P)], 'C');
+labelAt(D, 0.55, [dir(D, A), dir(D, C), dir(D, E)], 'D');
+labelAt(E, 0.52, [dir(E, B), dir(E, C), dir(E, D)], 'E');
+labelAt(F, 0.62, [dir(F, D), dir(F, C), dir(F, A), dir(F, P)], 'F');
+labelAt(G, 0.50, [dir(G, A), dir(G, F), dir(G, D), dir(G, E)], 'G', 0, rad(213));
+labelAt(P, 0.55, [dir(P, C), dir(P, F)], 'P');

@@ -1,4 +1,4 @@
-// @size 610 518
+// @size 700 514
 // 解説36 (1) -- the question figure with every side carried in its own unit
 // system, which is what makes the two similar-triangle ratios comparable:
 //   BP:PD = BE:AD = [1]:[2]   from triangle PBE ~ PDA
@@ -12,12 +12,16 @@
 // and neither is recoverable from the givens. Rule F1: ship what is verified.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.95, 6.15, 7.65, -1.15],
+    boundingbox: [-0.95, 5.18, 7.86, -1.29],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BASE = 6, RISE = 4.9, LEAN = 0.7;
+// Measured off the source page as a FILE, not eyeballed off an image pasted
+// into a chat: base 143px, rise 0.66 of the base, top side shifted right 0.15
+// of it, and both panels of the page agree to within a pixel. The eyeball
+// estimate had the rise 24% too tall and put the two panels at different leans.
+var BASE = 6, RISE = 3.96, LEAN = 0.90;
 
 var B = [0, 0], C = [BASE, 0], A = [LEAN, RISE], D = [BASE + LEAN, RISE];
 
@@ -34,7 +38,6 @@ seg(A, F);
 ticks(B, E, 2);
 ticks(E, C, 2);
 
-var OUT = dir(D, C) + Math.PI / 2;
 
 // BE and EC are EQUAL, so their braces stay level: staggering them would deny
 // the equality the ticks assert. DF and FC are unequal and stack (rule B9).
@@ -47,11 +50,11 @@ dimension(A, B, CIRCLED[2], 0.50, -1);
 dimension(D, F, CIRCLED[0], 0.42, 1);
 dimension(F, C, CIRCLED[1], 0.78, 1);
 
-at(A, 0.55, rad(130.9), 'A');
-at(B, 0.55, rad(220.9), 'B');
-at(C, 0.55, rad(310.9), 'C');
-at(D, 0.55, rad(40.9), 'D');
-at(E, 0.50, rad(270), 'E');
-at(F, 0.62, OUT, 'F');
-at(P, 0.50, rad(165.7), 'P');
-at(Q, 0.50, rad(100.2), 'Q');
+labelAt(A, 0.55, [dir(A, B), dir(A, D), dir(A, E), dir(A, F)], 'A');
+labelAt(B, 0.55, [dir(B, A), dir(B, C), dir(B, D)], 'B');
+labelAt(C, 0.55, [dir(C, B), dir(C, D)], 'C');
+labelAt(D, 0.55, [dir(D, A), dir(D, B), dir(D, C)], 'D');
+labelAt(E, 0.50, [dir(E, B), dir(E, C), dir(E, A)], 'E');
+labelAt(F, 0.62, [dir(F, D), dir(F, C), dir(F, A)], 'F');
+labelAt(P, 0.50, [dir(P, B), dir(P, D), dir(P, A), dir(P, E)], 'P', 0, rad(151));
+labelAt(Q, 0.50, [dir(Q, B), dir(Q, D), dir(Q, A), dir(Q, F)], 'Q', 0, rad(191));

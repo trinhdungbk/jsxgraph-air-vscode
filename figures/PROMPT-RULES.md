@@ -162,6 +162,17 @@ the mark says "these are equal", the letter names what they equal.
 **B7. Equal-length marks are 1/2/3 ticks at the segment midpoint** (JSXGraph
 `hatch`), one tick count per equivalence class, consistent across the figure.
 
+**But a glyph mark's scope can be the DIVISION rather than the figure, and this
+book's is.** 例題37 puts an open circle on both halves of AB *and* on both
+halves of AC in one diagram, and the two are not equal to each other; the
+中点連結定理 margin note does the same. So the circle reads "these parts are equal
+to each other" and stops at the side it sits on. Two consequences, both of them
+mistakes already made on this page: read as a figure-wide equivalence class the
+mark is simply false, and read as an ANGLE mark it lands at the wrong vertices
+entirely — a previous attempt put ● and ○ at A and C, where the source marks
+nothing at all. Decide which scope the source is using before copying a glyph,
+and say so in the figure.
+
 **B8. Two marks at one vertex need visibly different radii — and two VALUES at
 one vertex need different seats.** Different radii keep the arcs apart; the
 values then still land on each other, because both sit on nearly the same
@@ -196,7 +207,11 @@ that is the entire failure the stagger was invented for.
 and EC on DC are 3.10 and 1.55 units, and the short one's sagitta is capped at
 0.47 by B11 — so the depth the pair needs has nowhere to go except onto DE. They must also bulge the **same way**: a side picked
 independently per mark comes out alternating, and the pair reads as a wave
-rather than as two braces. Decide the side once for the line.
+rather than as two braces. Decide the side once for the line — **by which side
+is emptier, which is not always the outward one.** FG and GC on the cevian FC
+of 例題37(1) have to bulge INWARD: outward from that line is the base and the
+other cevian, and the two values land on both. Outwardness is the usual answer
+to emptiness, never a substitute for measuring it.
 *Check: the arc's apex is on the far side of the segment from the figure, the
 curve has a gap there, and the value sits in it.*
 
@@ -264,6 +279,13 @@ board units by construction; ai-tutor sets it from the canvas diagonal and then
 re-fits, so an em came out 0.435 board units on the same figure. Comparing the
 two by their em constants says they agree when the pictures do not. Measure the
 arc as a fraction of a length in the figure.
+
+---
+
+**B13. Marks of different KINDS on one line go on opposite sides.** The median
+in 解説37(2) carries two lengths (`y`, `4`) and two ratio units (②, ①). Put all
+four on one side and they queue up, and nothing tells the reader which mark is a
+measurement and which is a proportion. Lengths below, units above.
 
 ---
 
@@ -368,6 +390,27 @@ update:
 | `dimension` insets both ends, in em and not in span-fractions, when its endpoints are named points | B12 |
 | the staggered brace of a pair is chosen by chord length, not by drawing order | B9, B11 |
 | the label pass runs after every mark has claimed its wedge | B4 |
+
+**G12. The vertex letter's seat is the largest single rule that had to leave
+the prompt.** ai-tutor told the generator to write `label: {offset: [dx, dy]}`
+and to "pick the offset direction that lands in FREE space — not on a segment,
+arc, fill, angle mark, or another label". That is a claim about the finished
+figure, and the generator has never seen one; every offset it writes is a guess.
+The rule is now a pass over the finished board (`board_style.py`, emitted
+between the construction and the auto-fit, since the frame is measured from the
+labels). It reproduces the hand-drawn figures exactly from a construction whose
+every offset was the same wrong `[10, 10]`:
+
+| what the pass measures | rule |
+|---|---|
+| the direction of every stroke meeting the point, curves walked over their parameter range | B4 |
+| a stroke passing THROUGH the point occupies BOTH directions along it | B5 |
+| the tie at a crossing — vertical angles are equal by construction — broken outward, away from the figure's own ink | B4 (degenerate case) |
+| a gap that is widest but has ink at the letter's own radius (an angle arc, a brace) is skipped for the next one | B4, B8 |
+| the seat is a fixed 0.95 font sizes out, and no two letters take one seat | B2 |
+
+What stays in the prompt is what the model alone knows: which points exist and
+what they are called. What leaves is every judgement about the drawing.
 
 **G6. An attribute the element reads must be named in LOWER CASE.**
 `JXG.copyAttributes` returns every key lower-cased, so `attr.tickLength` comes

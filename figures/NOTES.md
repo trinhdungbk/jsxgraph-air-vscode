@@ -128,6 +128,11 @@ Likewise the base angles: ∠B = 50°, ∠C = 64° come from the answer
 
 ## Workflow
 
+**Read the previous attempt before redoing a figure, including a deleted one.**
+`git show <commit>^:figures/NN-name/figure.js` still has it, and its defects are
+the specification for the redo. 例題37 had been drawn and removed as obsolete;
+reading it first turned up four traps in ten minutes — see that section.
+
 **Crop the source per figure at 4x before writing any code.** The page is 731px
 wide; at that size you cannot see whether a vertex carries a dot, how many
 strokes leave B, or where a label sits. Every geometric decision above came out
@@ -1023,3 +1028,160 @@ pixels to 5–38px. See PROMPT-RULES E9.
 **The whole evaluation method is now written up in Confluence**, in the folder
 `~6177ab07f6da6a006af80a69/folder/2840756370`: *Figure Evaluation: Method and
 Layers*, *The Rendered-DOM Audit*, *Extension Evaluation: Results and Lessons*.
+
+---
+
+# Porting the session into ai-tutor
+
+Everything from this session that belongs in code is now in
+`ai-tutor/src/interfaces/module/figure_gen`. Two rules were already there and
+did not need porting: the auto-fit in `board_style.py` already frames the board
+from the drawn extent with the labels included (E9), and `code_measures.py`
+already gates the emitted coordinates against every stated measure, ratios
+included (A2/E2). Verified before adding anything.
+
+## The vertex label pass — the big one
+
+The prompt used to say: write `label: {offset: [dx, dy]}`, and "pick the offset
+direction that lands in FREE space — not on a segment, arc, fill, angle mark,
+or another label". A model cannot do that. It is a claim about the finished
+figure, which the model has never seen, so every offset is a guess.
+
+`board_labels_code()` now runs over the finished board, between the
+construction and the auto-fit (that order matters: the frame is measured from
+the labels, so they have to reach their seats first). It carries every label
+rule this session produced — B4's widest gap, B5's line-through-the-point, the
+crossing tie broken outward, and the occupancy test for a gap that is wide but
+has an angle arc sitting in it.
+
+Checked by rendering, because that is the only way: assembled through
+`_board_init_code` + construction + labels + fit and shot headless.
+
+- Figure 22 rebuilt with **every offset set to the same wrong `[10, 10]`** came
+  out with A up-left, B down-left, C down-right, D up-right, E straight up
+  between its two braces, F on the outward normal of DC, G and H below their
+  crossings — the seats this session had derived by hand, and nothing clipped.
+- A triangle with an auxiliary line drawn THROUGH B and C put both letters
+  straight down rather than level with the line (B5), seated L and R outward
+  along it, and pushed A to the outside because the angle mark occupies the
+  inside (the occupancy test).
+
+Gated off for coordinate figures (a point is named by its pair and seated clear
+of the axes by convention) and dynamic ones (the geometry moves after the pass
+would run, so a seat measured at rest is the wrong seat) — the same two
+exclusions the auto-fit already makes, for the same kind of reason.
+
+## The rest
+
+- **B12, the brace inset**, is now in `dimension.js`: the arc is pulled in half
+  a letter width from each endpoint, capped at a fifth of the span. Absolute,
+  never a fraction — the letter it clears is the same size on a span of 2 as on
+  a span of 8. Visible in the render: the ③ and ④ braces stop short of A, E
+  and D, and E's letter drops into the gap, which is also what freed A's seat.
+- **A6's other half** reached `prompts/common.py`. The rule there was "never
+  read proportions off the picture", full stop, which loses the one thing the
+  picture is authoritative about: a shape no measure fixes. It now says to take
+  a free shape from the picture and gives the examples.
+- **A7** reached `prompts/geometry_2d_measure.py`, where ratios are read: a
+  derived ratio must come out the same whatever the figure's free size and shape
+  are, and one that moves means the construction has been misread however
+  plausible the number looks.
+- **B9's refinements needed no code.** The element already gives each rival a
+  sagitta proportional to its own span, which delivers both of them for free:
+  two rivals of different length stagger, and the deeper one is always the
+  longer chord. Worth knowing before changing it.
+
+`prompts/common.py` also had a stale line: it listed "which side of its element
+each label sits on" among the things to read off the source image. The pass owns
+that now, so it is gone.
+
+## Not ported
+
+**E10, the compare sheet.** ai-tutor has no renderer, and this session showed
+that a compare sheet is the only check that catches a wrong SHAPE — two figures
+here shipped for two sessions with the rise a quarter too tall, and the audit
+passed them, because nothing in the pipeline knew what shape they were supposed
+to be. A rendering feedback node inside ai-tutor is still the biggest remaining
+gap, and it is now also the last unported rule.
+
+---
+
+# 例題37 中点連結定理と重心 (figures 28–32) — a redo, and what the old one got wrong
+
+| | |
+|---|---|
+| 28 | 問題(1) — the midpoint connector theorem twice over; find x and y |
+| 29 | 問題(2) — G the centroid on median BM; find x and y |
+| 30 | 解説(1) 図1 — triangle AFC heavy, AF and AC bisected |
+| 31 | 解説(1) 図2 — triangle BDE heavy, BE bisected |
+| 32 | 解説(2) — both centroid facts marked |
+
+x = 12 and y = 18 in (1); x = 6 and y = 8 in (2). Verified by replaying each
+figure's own code: E is the midpoint of AF, F of BE, D of AC, G of BD, F–G–C
+collinear to 1e-15, ED ∥ FC exactly, ED:FC = FG:ED = 1:2, FG:GC = 1:3.
+
+## The page had been drawn before, and reading it first was worth the minute
+
+`bba755c` removed figures 24–26 as obsolete. They were still in git, and they
+carried four defects — the redo is the list of them.
+
+**1. E and F were swapped.** The old code set `F = along(A, B, 1/3)` and
+`E = along(A, B, 2/3)`, putting F nearer A. But the solution says *E* is the
+midpoint of AF and *F* is the midpoint of BE, which forces the order A, E, F, B.
+The old figure is a perfectly good trisected triangle whose every mark
+contradicts the argument printed beside it, and nothing about it looks wrong.
+**A label order stated in words is a constraint to be derived, not a naming
+choice** — and the check is to read the solution's own midpoint claims back off
+the finished coordinates, not to confirm that "the trisection points are
+marked".
+
+**2. The source's equal-LENGTH circles were read as equal-ANGLE marks.** The old
+code put `mark(A, ...)` and `mark(C, ...)` — the ● / ○ angle glyphs — at A and
+C, where the source marks nothing. The circles are on the divided SIDES. Rule
+B7 now carries the distinction, and the reason it is easy to miss: this book
+scopes the glyph to the division rather than to the figure, so the same open
+circle sits on both halves of AB and both halves of AC, which are unequal.
+
+**3. One line was drawn three times.** `seg(F, C)`, `seg(F, G)` and `seg(G, C)`
+are all the same straight line, because G lies on FC — that is the whole point
+of the construction. Three strokes on one path is invisible in a render and
+doubles the ink weight. One `seg(F, C)`, and FG and GC are stretches of it,
+braced separately.
+
+**4. 図1, 図2 and the arithmetic were one board.** The two diagrams differ only
+in which division is marked, so putting them side by side with 図1 / 図2
+captions makes the two layers of one argument compete for the reader's eye; and
+the old figure wrote 「x = 6 × 2 = 12」 and 「Ans. x = 12, y = 18」 into the
+drawing. The arithmetic is page text. One figure per assertion.
+
+## Two new placement findings
+
+**A brace's side is emptiness, not outwardness.** FG and GC sit on the cevian
+FC, and the outward side of that line is the base BC and the other cevian BD:
+braced outward, `6` lands on the BD stroke and `y` sits on the base. Both bulge
+INWARD, into the free strip between FC and BD. B9 said "decide the side once for
+the line" and meant it; what it did not say is that the answer is not always
+outward.
+
+**Marks of different kinds on one line go on opposite sides.** The median in
+解説(2) carries two lengths and two ratio units. All four below and they queue
+up with nothing to say which is a measurement and which is a proportion:
+lengths below, ② and ① above (rule B13).
+
+## Still missing: the file
+
+Nothing here has a `reference/` crop, so `compare.py` skips 28–32 and every
+figure header carries the A8 warning: the triangle's proportions come off the
+paste, which is exactly the reading that had the last page's rise 24% too tall.
+Saving the page anywhere on disk closes it — crop to
+`figures/reference/q1-midline.png`, `q2-centroid.png`, `s1-fig1.png`,
+`s1-fig2.png`, `s2-centroid.png` and the sheets appear with no other change.
+
+## Not built
+
+The two ☆ margin notes — 中点連結定理 (two mini-triangles, ○ marks on one and
+□1 / □2 on the other, with the ⇔ statement) and 重心 (the three medians with
+① ②). They are the asset class 例題34's notes flagged: Japanese body text with
+mini-diagrams inside it, needing a text-block primitive none of these figures
+use. The diagrams alone would draw in minutes; the prose around them is the part
+that has no primitive.

@@ -1,4 +1,4 @@
-// GENERATED from figures/_lib.js + 15-q3-rotation/figure.js -- edit figure.js
+// GENERATED from figures/_lib.js + 32-s2-centroid/figure.js -- edit figure.js
 // ---------------------------------------------------------------------------
 // JP textbook notation primitives  (prepended to every figure by render.py)
 // ---------------------------------------------------------------------------
@@ -430,56 +430,45 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 461
-// 例題36 (3) 問題 -- right isosceles triangle ABC (right angle at A, 45 at B),
-// D on BC with BD = 3 and DC = 6, and E the image of D when triangle ABD is
-// turned about A onto AC. Find the area of ABC, the length EC, the area of ADE.
+// @size 700 560
+// 解説37 (2) -- the two centroid facts made visible on the figure: M bisects AC
+// because the centroid lies on the median (so x = 6), and the centroid divides
+// the median 2:1 from the vertex (so y = 4 x 2 = 8).
+//
+// The ratio units go ABOVE the median and the lengths stay BELOW it. Four marks
+// on one line otherwise queue up on the same side, and a reader cannot tell
+// which of them is a measurement and which is a proportion.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.92, 5.67, 9.97, -1.52],
+    boundingbox: [-0.90, 5.33, 6.88, -0.88],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BD = 3, DC = 6;
+// Free shape, taken off the paste and so unreliable (rule A8). This panel's
+// apex sits further right than (1)'s.
+var BASE = 6, RISE = 4.25, APEX = 3.78;
 
-var B = [0, 0],
-    D = [BD, 0],
-    C = [BD + DC, 0];
+var B = [0, 0], C = [BASE, 0], A = [APEX, RISE];
 
-// The right angle at A plus 45 at B force A: the apex of the isosceles right
-// triangle on BC sits over the midpoint at half the hypotenuse.
-var A = [(BD + DC) / 2, (BD + DC) / 2];
+var M = midpoint(A, C),
+    G = along(B, M, 2 / 3);
 
-// E is D turned about A through the angle that carries B to C -- a quarter
-// turn, because angle BAC is right. Deriving E this way rather than placing it
-// is what makes EC = BD and EC perpendicular to BC true in the drawing.
-var turn = dir(A, C) - dir(A, B);
-var E = polar(A, Math.sqrt((D[0] - A[0]) * (D[0] - A[0]) + (D[1] - A[1]) * (D[1] - A[1])),
-    dir(A, D) + turn);
+closed([A, B, C]);
+seg(B, M);
 
-seg(B, C);
-seg(A, B);
-seg(A, D);
-seg(A, C);
-seg(A, E);
-seg(D, E);
+equalLength(A, M, false);
+equalLength(M, C, false);
 
-// The turn lands E directly above C, so the book shows EC dotted: it is the
-// segment being measured, not a side of either triangle.
-seg(E, C, DOTTED);
+braceOn(A, M, '6', 0.42, 1);
+braceOn(M, C, '<i>x</i>', 0.42, 1);
+braceOn(B, G, '<i>y</i>', 0.42, -1);
+braceOn(G, M, '4', 0.42, -1);
+braceOn(B, G, CIRCLED[1], 0.42, 1);
+braceOn(G, M, CIRCLED[0], 0.42, 1);
 
-at(A, 0.5, rad(90), 'A');
-at(B, 0.5, rad(215), 'B');
-at(D, 0.5, rad(255), 'D');
-at(C, 0.5, rad(325), 'C');
-at(E, 0.5, rad(20), 'E');
-
-rightAngle(A, dir(A, B), dir(A, C), 0.5);
-angleMark(B, 0.95, dir(B, C), dir(B, A), '45&#176;', 0.62);
-angleMark(D, 0.95, dir(D, E), dir(D, A), '45&#176;', 0.62);
-
-// Stacked at different depths so the two arcs read as two measurements rather
-// than one long brace under the whole base.
-dimension(B, D, '3', 0.45, -1);
-dimension(D, C, '6', 0.85, -1);
+labelAt(A, 0.42, [dir(A, B), dir(A, C)], 'A');
+labelAt(B, 0.42, [dir(B, A), dir(B, C), dir(B, M)], 'B');
+labelAt(C, 0.42, [dir(C, A), dir(C, B)], 'C');
+labelAt(M, 0.40, [dir(M, A), dir(M, C), dir(M, B)], 'M');
+labelAt(G, 0.40, [dir(G, B), dir(G, M)], 'G');

@@ -1,4 +1,4 @@
-// GENERATED from figures/_lib.js + 15-q3-rotation/figure.js -- edit figure.js
+// GENERATED from figures/_lib.js + 30-s1-fig1/figure.js -- edit figure.js
 // ---------------------------------------------------------------------------
 // JP textbook notation primitives  (prepended to every figure by render.py)
 // ---------------------------------------------------------------------------
@@ -430,56 +430,57 @@ function bulgeArc(p, q, h, s) {
     };
 }
 
-// @size 700 461
-// 例題36 (3) 問題 -- right isosceles triangle ABC (right angle at A, 45 at B),
-// D on BC with BD = 3 and DC = 6, and E the image of D when triangle ABD is
-// turned about A onto AC. Find the area of ABC, the length EC, the area of ADE.
+// @size 700 558
+// 解説37 (1) 図1 -- the first layer, inked heavy: in triangle AFC, E and D are
+// the midpoints of AF and AC, so ED // FC and ED:FC = 1:2. That ratio is what
+// the second layer (図2) then feeds on.
+//
+// The circles mark the two BISECTED SIDES of this triangle -- AF and AC. They
+// are equal-length marks on the segments, not angle marks at A and C: a
+// previous attempt at this page read them as angles and put them at the wrong
+// vertices, which is easy to do and impossible to see afterwards.
 
 var board = JXG.JSXGraph.initBoard(BOARD, {
-    boundingbox: [-0.92, 5.67, 9.97, -1.52],
+    boundingbox: [-0.89, 5.34, 6.88, -0.87],
     axis: false, grid: false, keepaspectratio: true,
     showNavigation: false, showCopyright: false
 });
 
-var BD = 3, DC = 6;
+// The triangle is free -- nothing in the question fixes it -- and this page is
+// NOT available as a file, so its proportions come off the paste and are
+// unreliable by rule A8. Flagged rather than trusted; a crop closes it.
+var BASE = 6, RISE = 4.25, APEX = 3.37;
 
-var B = [0, 0],
-    D = [BD, 0],
-    C = [BD + DC, 0];
+var B = [0, 0], C = [BASE, 0], A = [APEX, RISE];
 
-// The right angle at A plus 45 at B force A: the apex of the isosceles right
-// triangle on BC sits over the midpoint at half the hypotenuse.
-var A = [(BD + DC) / 2, (BD + DC) / 2];
+var E = along(A, B, 1 / 3),
+    F = along(A, B, 2 / 3),
+    D = midpoint(A, C),
+    G = midpoint(B, D);
 
-// E is D turned about A through the angle that carries B to C -- a quarter
-// turn, because angle BAC is right. Deriving E this way rather than placing it
-// is what makes EC = BD and EC perpendicular to BC true in the drawing.
-var turn = dir(A, C) - dir(A, B);
-var E = polar(A, Math.sqrt((D[0] - A[0]) * (D[0] - A[0]) + (D[1] - A[1]) * (D[1] - A[1])),
-    dir(A, D) + turn);
+closed([A, B, C]);
+seg(B, D);
+seg(F, C);
+seg(E, D);
 
-seg(B, C);
-seg(A, B);
-seg(A, D);
-seg(A, C);
-seg(A, E);
-seg(D, E);
+// The triangle the argument turns on, distinguished by WEIGHT alone (never by
+// colour, never by dashing -- dashing is the auxiliary line's).
+seg(A, F, HEAVY);
+seg(F, C, HEAVY);
+seg(C, A, HEAVY);
+seg(E, D, HEAVY);
 
-// The turn lands E directly above C, so the book shows EC dotted: it is the
-// segment being measured, not a side of either triangle.
-seg(E, C, DOTTED);
+equalLength(A, E, false);
+equalLength(E, F, false);
+equalLength(A, D, false);
+equalLength(D, C, false);
 
-at(A, 0.5, rad(90), 'A');
-at(B, 0.5, rad(215), 'B');
-at(D, 0.5, rad(255), 'D');
-at(C, 0.5, rad(325), 'C');
-at(E, 0.5, rad(20), 'E');
+braceOn(E, D, '<i>x</i>', 0.42, 1);
 
-rightAngle(A, dir(A, B), dir(A, C), 0.5);
-angleMark(B, 0.95, dir(B, C), dir(B, A), '45&#176;', 0.62);
-angleMark(D, 0.95, dir(D, E), dir(D, A), '45&#176;', 0.62);
-
-// Stacked at different depths so the two arcs read as two measurements rather
-// than one long brace under the whole base.
-dimension(B, D, '3', 0.45, -1);
-dimension(D, C, '6', 0.85, -1);
+labelAt(A, 0.42, [dir(A, B), dir(A, C), dir(A, D), dir(A, E)], 'A');
+labelAt(B, 0.42, [dir(B, A), dir(B, C), dir(B, D)], 'B');
+labelAt(C, 0.42, [dir(C, A), dir(C, B), dir(C, F)], 'C');
+labelAt(D, 0.42, [dir(D, A), dir(D, C), dir(D, B), dir(D, E)], 'D');
+labelAt(E, 0.38, [dir(E, A), dir(E, B), dir(E, D)], 'E');
+labelAt(F, 0.38, [dir(F, A), dir(F, B), dir(F, C)], 'F');
+labelAt(G, 0.40, [dir(G, B), dir(G, D), dir(G, F), dir(G, C)], 'G', 0, rad(250));

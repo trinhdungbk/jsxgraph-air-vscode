@@ -143,6 +143,28 @@ function mark(v, r, from, to, filled) {
     });
 }
 
+// An equal-length mark as this page sets it: a small circle ON the segment at
+// its midpoint, one per equal part -- not the tick strokes of B7.
+//
+// Its scope is the DIVISION, not the figure. The 中点連結定理 margin note puts an
+// open circle on both halves of AB and on both halves of AC, which are not
+// equal to one another, so the glyph reads "these parts are equal to each
+// other" and stops at the side it is on. That is worth knowing before
+// reproducing one: read as a figure-wide equivalence class it is simply false,
+// and read as an ANGLE mark -- which is what a previous attempt at this page
+// did -- it puts the marks at the wrong vertices entirely.
+function equalLength(p, q, filled, size) {
+    var c = midpoint(p, q), rr = size || 0.085;
+    return board.create('curve', [
+        function (t) { return c[0] + rr * Math.cos(t); },
+        function (t) { return c[1] + rr * Math.sin(t); },
+        0, 2 * Math.PI
+    ], {
+        strokeColor: 'black', strokeWidth: 1.2, fixed: true, highlight: false,
+        fillColor: filled ? 'black' : 'white', fillOpacity: 1
+    });
+}
+
 // None of JSXGraph's seven built-in arrow heads is an open V of straight
 // strokes: types 1-2 and 4-6 are filled, 3 is a bar, and 7 -- the only unfilled
 // one -- draws its wings as Bezier curves. So the head is two plain strokes

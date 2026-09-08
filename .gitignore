@@ -1,2 +1,4 @@
 node_modules
 figures/__pycache__/
+.claude/logs/
+.claude/hooks/__pycache__/

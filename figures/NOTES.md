@@ -1217,3 +1217,56 @@ One sizing trap: the glyph radius cannot be `tickLength`. That attribute is
 0.45 em, calibrated for the bar form's end ticks, and a circle of that radius
 is nearly as wide as a letter — it reads as a ring hung on the side instead of
 a mark on it. The glyph has its own 0.17 em (rule G13).
+
+---
+
+# Applying the session to ai-tutor, second pass
+
+Most of the rule set was already ported, and two things I had recorded as
+missing were not: **`evaluation/utils/jsxgraph_renderer.py` + `notation_audit.py`
+exist**, so E10's rendered feedback is largely built (against this repo's own
+PROMPT-RULES — B1, A1, D1, D5, E5, label overlap, and the pre-composed-enclosure
+check), and **B13 was already in `dimension.js`**, more thoroughly than I would
+have written it: the collinear group splits by unit system into alternating
+lanes, with a documented decision about what a third system does. Checking
+before adding was worth the two minutes.
+
+## What was missing: E4's other half
+
+The audit checked label-against-label overlap and not label-against-STROKE —
+which is the defect the label pass exists to prevent, so nothing verified the
+pass, and nothing verified the prompt's own free-space rule for anchored text
+either. `onStroke` now reports it, tested against each box's inner 60% so that a
+braced value sitting in the gap of its own arc, or an angle value just beyond
+its own arc, does not read as a collision.
+
+It discriminates, measured: 例題36(1) assembled with every label offset left at
+the generator's `[10, 10]` guess reports **five** labels on strokes; the same
+construction with the label pass appended reports **none**.
+
+## Two real defects it then found
+
+**The auto-fit was losing the wide axis, in production.** `fill` came back at
+1.14 — content 114% of its frame, with B and D outside it. The cause is not the
+label pass (it happens with the pass off too): the fit hands
+`setBoundingBox(box, true)` a box whose aspect differs from the container's, and
+`keepaspectratio` reshapes it by taking the box IN on the wide axis. Every pass
+then measures the same content, asks for the same box and gets the same trim —
+the loop had converged on the wrong answer, and twelve passes with an early exit
+changed nothing at all. Expanding the box to the frame's aspect before handing
+it over makes the reshape a no-op; `fill` went to 0.93 and every clipped-label
+finding disappeared. Rule G14, and the general form is worth more than the fix:
+when a loop will not converge, find out what the setter does to your value
+before adding iterations.
+
+**The sagitta floor was scoped to avoid churn, and that was the wrong reason.**
+B11's floor — an arc never sits closer to its segment than a bare number would —
+was applied to enclosed units only, with a comment saying no figure drawn before
+would change. The audit found the `6` of 例題37(1) on the BD stroke: FG is short,
+so 0.08 of its span puts the value back on the line the brace lifted it off. The
+floor now applies to a bare length too (rule G15).
+
+After both fixes all four probe figures audit clean — 例題36(1) with the label
+pass, 例題37(1) through the element with circle glyphs, and the same with tick
+marks — and the only findings left are the five the deliberately-unplaced
+control is supposed to produce. 748 unit tests pass, plus 2 new ones.

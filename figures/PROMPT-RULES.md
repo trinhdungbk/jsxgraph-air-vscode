@@ -430,6 +430,29 @@ Two sizes that are not interchangeable: the tick half-length is `tickLength`
 0.17 em. Drawn at `tickLength` a circle is nearly as wide as a letter and reads
 as a ring hung on the side rather than a mark on it.
 
+**G14. A fixed-point loop cannot converge if the setter silently transforms
+your request — adding passes is not a fix.** The auto-fit measures what the
+figure drew, pads it, and hands the box to `setBoundingBox(box, true)`. With
+`keepaspectratio` the board reshapes a box whose aspect differs from its
+container's, and it does so by taking the box IN on the wide axis: 641px of
+geometry ended up in a 627px frame, with the figure's own corner vertices
+outside it. No number of passes helps, because every pass measures the same
+content, asks for the same box and gets the same trim — the loop had converged,
+on the wrong answer. Twelve passes and an early exit changed nothing. The fix is
+to expand the box to the frame's aspect first, so the reshape is a no-op.
+Two things worth carrying: the frame-fill audit had been reporting >100% all
+along and that is a *finding*, not a rounding artefact; and when a loop will not
+converge, find out what the setter does to the value before adding iterations.
+
+**G15. "No figure drawn before this changes" is not a property worth keeping
+when the figures were wrong.** B11's sagitta floor — an arc may never sit closer
+to its segment than a bare number would — was applied to enclosed units only,
+deliberately, so that no existing figure would move. The rendered audit then
+found the `6` of 例題37(1) sitting on the BD stroke: FG is short, and 0.08 of
+its span puts the value straight back on the line the brace lifted it off. The
+floor now applies to a bare length too. A scope chosen to avoid churn is a
+scope chosen for the wrong reason.
+
 **G6. An attribute the element reads must be named in LOWER CASE.**
 `JXG.copyAttributes` returns every key lower-cased, so `attr.tickLength` comes
 back `undefined` however the Options block spells it, `undefined * height` is
